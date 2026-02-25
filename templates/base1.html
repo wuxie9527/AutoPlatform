@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接口测试平台 - 用例管理</title>
+
+    <!-- Bootstrap 3 CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/css/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/base1.css">
+        {% block css %}{% endblock %}
+</head>
+
+<body>
+    <!-- 左侧导航栏 -->
+    <nav class="sidebar">
+        <div class="logo">
+            <i class="fa fa-bug"></i>
+            <span>接口测试平台</span>
+        </div>
+
+        <ul class="nav nav-pills nav-stacked">
+            <li>
+                <a href="#">
+                    <i class="fa fa-home"></i>
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="#interface-test" data-toggle="collapse" class="collapse-toggle">
+                    <i class="fa fa-plug"></i>
+                    <span>接口测试</span>
+                    <i class="icon-submenu lnr lnr-chevron-left"></i>
+                </a>
+                <div id="interface-test" class="collapse in">
+                    <ul class="nav nav-second-level">
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-cube"></i>
+                                <span>模块管理</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-plug"></i>
+                                <span>接口管理</span>
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a href="#">
+                                <i class="fa fa-list-alt"></i>
+                                <span>用例管理</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <a href="/front/evn/list/">
+                    <i class="fa fa-server"></i>
+                    <span>环境管理</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fa fa-globe"></i>
+                    <span>全局变量</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <i class="fa fa-calendar"></i>
+                    <span>测试计划</span>
+                </a>
+            </li>
+            <li>
+                <a href="/front/project/list/">
+                    <i class="fa fa-folder"></i>
+                    <span>项目管理</span>
+                </a>
+            </li>
+            <li>
+                <a href="#system" data-toggle="collapse" class="collapsed"> <i class="fa fa-cogs"></i>
+                    <span>系统设置</span> <i class="icon-submenu lnr lnr-chevron-left"></i>
+                </a>
+                <div id="system" class="collapse ">
+                    <ul class="nav">
+                        <li><a href="/base/sign/" class="">签名方式</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 顶部信息栏 -->
+    <div class="header">
+        <h1 class="page-title">用例管理</h1>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <span>管理员</span>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        {% block body %}
+        {% endblock %}
+    </div>
+
+
+    <!-- jQuery 和 Bootstrap JS -->
+    <script src="/static/js/jquery/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/base1.js"></script>
+{% block javascript %} {% endblock %}
+
+</body>
+</html>

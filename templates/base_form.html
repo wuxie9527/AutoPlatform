@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form id="formAdd">
+    <div class="clearfix">
+        {% for file in form %}
+        <div class="col-xs-6">
+            <div class="form-group" style="">
+                <label>{{ file.lable }}</label>
+                {{ file }}
+                <span class="error-msg" style="color: red"></span>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+</form>
+</body>
+</html>

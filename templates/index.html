@@ -1,0 +1,267 @@
+    <div class="header">
+        <h1 class="page-title">用例管理</h1>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <span>管理员</span>
+        </div>
+
+    <div class="header">
+        <h1 class="page-title">用例管理</h1>
+        <div class="user-info">
+            <div class="user-avatar">AD</div>
+            <span>管理员</span>
+        </div>
+    </div>
+
+                <!-- 筛选区域 -->
+        <div class="filter-panel">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label for="project">项目</label>
+                    <select id="project" class="form-control input-sm">
+                        <option value="">全部项目</option>
+                        <option value="1">用户中心项目</option>
+                        <option value="2">订单管理系统</option>
+                        <option value="3">支付网关</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="case-name">用例名称</label>
+                    <input type="text" id="case-name" class="form-control input-sm" placeholder="请输入用例名称">
+                </div>
+                <div class="filter-item">
+                    <label for="creator">创建人</label>
+                    <select id="creator" class="form-control input-sm">
+                        <option value="">全部人员</option>
+                        <option value="1">管理员</option>
+                        <option value="2">测试员</option>
+                        <option value="3">开发员</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="status">状态</label>
+                    <select id="status" class="form-control input-sm">
+                        <option value="">全部状态</option>
+                        <option value="1">通过</option>
+                        <option value="0">失败</option>
+                        <option value="2">未执行</option>
+                    </select>
+                </div>
+
+        </div>
+            <div class="filter-actions">
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-refresh"></i> 重置
+                </button>
+                <button type="button" class="btn btn-primary btn-sm">
+                    <i class="fa fa-search"></i> 查询
+                </button>
+            </div>
+            </div>
+
+        <!-- 数据主表格区域 -->
+        <div class="main-panel">
+            <!-- 操作按钮区域 -->
+        <div class="table-actions">
+            <div>
+                <button type="button" class="btn btn-primary btn-sm">
+                    <i class="fa fa-plus"></i> 新增用例
+                </button>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-upload"></i> 批量导入
+                </button>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-download"></i> 导出
+                </button>
+            </div>
+            <div>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-refresh"></i> 刷新
+                </button>
+            </div>
+        </div>
+            <!-- 表格数据区域 -->
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="select-column">
+                                <input type="checkbox" id="select-all" class="select-checkbox">
+                            </th>
+                            <th width="80">用例ID</th>
+                            <th width="150">用例名称</th>
+                            <th width="150">所属接口</th>
+                            <th width="100">优先级</th>
+                            <th width="100">状态</th>
+                            <th width="150">创建时间</th>
+                            <th width="150">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="select-column">
+                                <input type="checkbox" class="select-checkbox case-select" data-id="101">
+                            </td>
+                            <td>101</td>
+                            <td>用户登录-正常场景</td>
+                            <td>用户登录接口</td>
+                            <td><span class="label label-danger">高</span></td>
+                            <td><span class="status-badge status-active">通过</span></td>
+                            <td>2026-02-09 10:30:15</td>
+                            <td>
+                                <div class="action-box">
+                                    <div class="action-item">
+                                        <i class="fa fa-pencil action-icon"></i>
+                                        <span class="action-text">修改</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-copy action-icon"></i>
+                                        <span class="action-text">复制</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-trash action-icon"></i>
+                                        <span class="action-text">删除</span>
+                                    </div>
+                                    <div class="test-btn">
+                                        测试
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="select-column">
+                                <input type="checkbox" class="select-checkbox case-select" data-id="102">
+                            </td>
+                            <td>102</td>
+                            <td>用户登录-密码错误</td>
+                            <td>用户登录接口</td>
+                            <td><span class="label label-warning">中</span></td>
+                            <td><span class="status-badge status-active">通过</span></td>
+                            <td>2026-02-09 11:20:45</td>
+                            <td>
+                                <div class="action-box">
+                                    <div class="action-item">
+                                        <i class="fa fa-pencil action-icon"></i>
+                                        <span class="action-text">修改</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-copy action-icon"></i>
+                                        <span class="action-text">复制</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-trash action-icon"></i>
+                                        <span class="action-text">删除</span>
+                                    </div>
+                                    <div class="test-btn">
+                                        测试
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="select-column">
+                                <input type="checkbox" class="select-checkbox case-select" data-id="103">
+                            </td>
+                            <td>103</td>
+                            <td>用户登录-用户不存在</td>
+                            <td>用户登录接口</td>
+                            <td><span class="label label-warning">中</span></td>
+                            <td><span class="status-badge status-inactive">失败</span></td>
+                            <td>2026-02-08 16:45:22</td>
+                            <td>
+                                <div class="action-box">
+                                    <div class="action-item">
+                                        <i class="fa fa-pencil action-icon"></i>
+                                        <span class="action-text">修改</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-copy action-icon"></i>
+                                        <span class="action-text">复制</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-trash action-icon"></i>
+                                        <span class="action-text">删除</span>
+                                    </div>
+                                    <div class="test-btn">
+                                        测试
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="select-column">
+                                <input type="checkbox" class="select-checkbox case-select" data-id="104">
+                            </td>
+                            <td>104</td>
+                            <td>创建订单-正常流程</td>
+                            <td>用户登录接口</td>
+                            <td><span class="label label-danger">高</span></td>
+                            <td><span class="status-badge status-active">通过</span></td>
+                            <td>2026-02-08 09:15:33</td>
+                            <td>
+                                <div class="action-box">
+                                    <div class="action-item">
+                                        <i class="fa fa-pencil action-icon"></i>
+                                        <span class="action-text">修改</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-copy action-icon"></i>
+                                        <span class="action-text">复制</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-trash action-icon"></i>
+                                        <span class="action-text">删除</span>
+                                    </div>
+                                    <div class="test-btn">
+                                        测试
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="select-column">
+                                <input type="checkbox" class="select-checkbox case-select" data-id="105">
+                            </td>
+                            <td>105</td>
+                            <td>创建订单-库存不足</td>
+                            <td>用户登录接口</td>
+                            <td><span class="label label-warning">中</span></td>
+                            <td><span class="status-badge status-draft">未执行</span></td>
+                            <td>2026-02-07 13:28:19</td>
+                            <td>
+                                <div class="action-box">
+                                    <div class="action-item">
+                                        <i class="fa fa-pencil action-icon"></i>
+                                        <span class="action-text">修改</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-copy action-icon"></i>
+                                        <span class="action-text">复制</span>
+                                    </div>
+                                    <div class="action-item">
+                                        <i class="fa fa-trash action-icon"></i>
+                                        <span class="action-text">删除</span>
+                                    </div>
+                                    <div class="test-btn">
+                                        测试
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="text-center">
+                <ul class="pagination pagination-sm">
+                    <li class="disabled"><a href="#">«</a></li>
+                    <li class="active"><a href="#">1</a></li>
+                    <li><a href="#">2</a></li>
+                    <li><a href="#">3</a></li>
+                    <li><a href="#">4</a></li>
+                    <li><a href="#">5</a></li>
+                    <li><a href="#">»</a></li>
+                </ul>
+                <div class="text-muted">共 5 条记录</div>
+            </div>

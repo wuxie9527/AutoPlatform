@@ -1,0 +1,195 @@
+{% extends "../base1.html" %}
+
+
+{% block body %}
+
+        <!-- 筛选区域 -->
+        <div class="filter-panel">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label for="project">项目名称</label>
+                    <input id="project" class="form-control input-sm">
+                </div>
+
+        </div>
+            <div class="filter-actions">
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-refresh"></i> 重置
+                </button>
+                <button type="button" class="btn btn-primary btn-sm">
+                    <i class="fa fa-search"></i> 查询
+                </button>
+            </div>
+            </div>
+
+        <!-- 数据主表格区域 -->
+        <div class="main-panel">
+            <!-- 操作按钮区域 -->
+            <div class="table-actions">
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addItemModal">
+                    <i class="fa fa-plus"></i> 新增用例
+                </button>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-upload"></i> 批量导入
+                </button>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-download"></i> 导出
+                </button>
+            </div>
+            <div>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-refresh"></i> 刷新
+                </button>
+            </div>
+        </div>
+            <!-- 表格数据区域 -->
+            <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th class="select-column">
+                        <input type="checkbox" id="select-all" class="select-checkbox">
+                    </th>
+                    <th>项目ID</th>
+                    <th>项目名称</th>
+                    <th>描述</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for project in querylist %}
+                    <tr>
+                        <td class="select-column">
+                            <input type="checkbox" class="select-checkbox case-select" data-id="{{ project.prj_id }}">
+                        </td>
+                        <td>{{ project.prj_id }}</td>
+                        <td>{{ project.prj_name }}</td>
+                        <td>{{ project.description }}</td>
+                        <td>{{ project.created_time }}</td>
+                        <td>
+                            <div class="action-box">
+                               <div class="action-item">
+                                   <i class="fa fa-pencil action-icon"></i>
+                                   <button class="action-text" style="color: inherit; border: none;
+                                   outline: none;background: transparent;" onclick="bindBtnEditEvent({{ project.prj_id }})">编辑</button>
+                               </div>
+
+                                <div class="action-item">
+                                    <i class="fa fa-trash action-icon"></i>
+                                    <a class="action-text" style="color: inherit;" href="/front/project/delete/{{ project.prj_id }}/">删除</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+                <!-- 新增模态框 -->
+        <div class="modal fade" id="addItemModal" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel">
+            <div class="modal-dialog" role="document" id="data_add" data-is-edit="true">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" id="addItemModalLabel">新增项目</h4>
+                    </div>
+                    <form id="addItemForm" method="post" >
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="itemName">项目名称</label>
+                                <input type="text" class="form-control" id="prj_name" name="prj_name"
+                                       placeholder="请输入项目名称">
+                                <span class="error-msg" style="color: red"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="itemDescription">项目描述</label>
+                                <textarea class="form-control" id="description" name="description"
+                                          placeholder="请输入项目描述" rows="4"></textarea>
+                                <span class="error-msg" style="color: red"></span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button id="formAdd" type="button" class="btn btn-primary">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+{% endblock %}
+
+{% block javascript %}
+            <script>
+            var editId = null
+            $(function () {
+                bindBtnSaveEvent();
+            })
+            function bindBtnSaveEvent(){
+                $("#formAdd").click(function (e) {
+                    $(".error-msg").empty()
+                    e.preventDefault();
+                    var isEdit = $("#data_add").data('is-edit');
+                    if (isEdit === true) {
+                        url = '/front/project/add/'
+                    }else {
+                        url = '/front/project/edit/?prj_id=' + editId
+                    }
+                    console.log(url)
+                    $.ajax({
+                        url : url ,
+                        type: "post",
+                        data:$("#addItemForm").serialize(),
+                        dataType:"JSON",
+                        success:function (res) {
+                            if (res.status){
+                                alert("保存成功")
+                                location.reload();
+                                $("#addItemModal").modal("hide");
+                                $("#data_add").data('is-edit', true);
+                                $("#addItemForm")[0].reset();
+                                editId = null
+                            }else {
+                                $.each(res.error,function (name,errorList) {
+                                    $("#"+name).next().text(errorList[0])
+                                })
+                            }
+                        }
+                        })
+                });
+            }
+
+            function bindBtnEditEvent(prj_id){
+                editId = prj_id
+                $.ajax({
+                    url : "/front/project/select/"+prj_id+"/",
+                    type: "GET",
+                    dataType:"JSON",
+                    success:function (res) {
+                            if (res.status){
+                                $('#prj_name').val(res.data.prj_name);
+                                $('#description').val(res.data.description);
+                                $('#addItemModalLabel').text('编辑用户');
+                                $("#data_add").data('is-edit', false);
+                                $("#addItemModal").modal("show");
+                            }else {
+                                alert(res.error);
+
+                                }
+                    }
+                });
+            }
+                // 按 ESC 键关闭弹窗
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        hideInputModal();
+                    }
+                });
+
+            </script>
+{% endblock %}
