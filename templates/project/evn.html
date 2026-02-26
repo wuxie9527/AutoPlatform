@@ -109,12 +109,12 @@
 
                 <!-- 新增模态框 -->
         <div class="modal fade" id="addEnvModal" tabindex="-1" role="dialog" aria-labelledby="addEnvModalLabel">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                     </button>
                 <h4 class="modal-title" id="addEnvModalLabel">新增测试环境</h4>
             </div>
             <div class="modal-body">
@@ -130,7 +130,7 @@
                             <div class="form-group">
                                 <label for="new-env-project">所属项目</label>
                                 <select class="form-control" id="new-env-project" name="environment_project" required>
-                                    <option value="">请选择所属项目</option>
+                                    <option value="demo" selected>请选择所属项目</option>
                                     {% for prj in project_list %}
                                         <option value={{ prj.prj_id }}>{{ prj.prj_name }}</option>
                                     {% endfor %}
@@ -150,7 +150,7 @@
                     <div class="form-group">
                         <label>测试对象配置</label>
                         <div class="test-targets-container">
-                            <div class="test-target-item panel panel-default">
+                            <!-- <div class="test-target-item panel panel-default">
                                 <div class="panel-heading">
                                     <h5 class="panel-title">测试对象 #1</h5>
                                     <button type="button" class="btn btn-xs btn-danger remove-test-target">
@@ -184,7 +184,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                         <button type="button" class="btn btn-default btn-sm" id="add-test-target">
                             <i class="fa fa-plus"></i> 添加测试对象
@@ -195,7 +195,7 @@
                     <div class="form-group">
                         <label>数据库配置</label>
                         <div class="database-configs-container">
-                            <div class="database-config-item panel panel-default">
+                            <!-- <div class="database-config-item panel panel-default">
                                 <div class="panel-heading">
                                     <h5 class="panel-title">数据库配置 #1</h5>
                                     <button type="button" class="btn btn-xs btn-danger remove-database-config">
@@ -249,75 +249,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
-                        <button type="button" class="btn btn-default btn-sm" id="add-database-config">
-                            <i class="fa fa-plus"></i> 添加数据库配置
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="save-env-btn">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-                <!-- 编辑模态框 -->
-        <div class="modal fade" id="editEnvModal" tabindex="-1" role="dialog" aria-labelledby="editEnvModalLabel">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="addEnvModalLabel">编辑测试环境</h4>
-            </div>
-            <div class="modal-body">
-                <form id="add-env-form">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit-env-name">环境名称 *</label>
-                                <input type="text" class="form-control" name="evn_name" id="edit-env-name" placeholder="请输入环境名称" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="edit-env-project">所属项目</label>
-                                <select class="form-control" id="edit-env-project" name="environment_project" required>
-                                    <option value="">请选择所属项目</option>
-                                    {% for prj in project_list %}
-                                        <option value={{ prj.prj_id }}>{{ prj.prj_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="new-env-description">描述</label>
-                                <input type="text" class="form-control" id="edit-env-description" name="description">
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- 测试对象配置区域 -->
-                    <div class="form-group">
-                        <label>测试对象配置</label>
-                        <div class="test-targets-container">
-
-                        </div>
-                        <button type="button" class="btn btn-default btn-sm" id="add-test-target">
-                            <i class="fa fa-plus"></i> 添加测试对象
-                        </button>
-                    </div>
-                    <!-- 数据库配置区域 -->
-                    <div class="form-group">
-                        <label>数据库配置</label>
-                        <div class="database-configs-container">
-
                         <button type="button" class="btn btn-default btn-sm" id="add-database-config">
                             <i class="fa fa-plus"></i> 添加数据库配置
                         </button>
@@ -362,7 +295,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>对象名称</label>
-                                    <input type="text" class="form-control test-target-name" placeholder="如：API服务、Web服务" required>
+                                    <input type="text" class="form-control test-target-name" placeholder="如：硬件中心服务、工单服务" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -384,7 +317,7 @@
                                     <label>协议类型</label>
                                     <select class="form-control test-target-protocol">
                                         <option value="http">HTTP</option>
-                                        <option value="https">HTTPS</option>
+                                        <option value="MQTT">MQTT</option>
                                     </select>
                                 </div>
                             </div>
@@ -397,15 +330,16 @@
 
         // 删除测试对象
         $(document).on('click', '.remove-test-target', function() {
-            if ($('.test-target-item').length > 1) {
+            if ($('.test-target-item').length >= 1) {
                 $(this).closest('.test-target-item').remove();
                 // 重新编号
                 $('.test-target-item').each(function(index) {
                     $(this).find('.panel-title').text('测试对象 #' + (index + 1));
                 });
-            } else {
-                alert('至少需要保留一个测试对象');
-            }
+            } 
+            // else {
+            //     alert('至少需要保留一个测试对象');
+            // }
         });
 
         // 添加数据库配置
@@ -427,16 +361,14 @@
                                     <select class="form-control database-type" required>
                                         <option value="">请选择数据库类型</option>
                                         <option value="mysql">MySQL</option>
-                                        <option value="postgresql">PostgreSQL</option>
-                                        <option value="redis">Redis</option>
-                                        <option value="mongodb">MongoDB</option>
+                                        <option value="oracle">Oracle</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>连接名称</label>
-                                    <input type="text" class="form-control database-name" placeholder="如：主库、缓存库" required>
+                                    <label>数据库名称</label>
+                                    <input type="text" class="form-control database-name" placeholder="如：station_support" required>
                                 </div>
                             </div>
                         </div>
@@ -502,6 +434,7 @@
                 var targetData = {
                     name: $(this).find('.test-target-name').val(),
                     url: $(this).find('.test-target-url').val(),
+                    port: $(this).find('.test-target-port').val(),
                     protocol: $(this).find('.test-target-protocol').val()
                 };
                 envData.test_object_config.push(targetData);
@@ -526,61 +459,172 @@
                 return;
             }
 
-            if (envData.test_object_config.length === 0) {
-                alert('请至少添加一个测试对象');
-                return;
-            }
+            // if (envData.test_object_config.length === 0) {
+            //     alert('请至少添加一个测试对象');
+            //     return;
+            // }
 
-            {#if (envData.databases.length === 0) {#}
-            {#    alert('请至少添加一个数据库配置');#}
-            {#    return;}#}
-
-            console.log('保存环境数据:', envData);
-            console.log('test_object_config:', envData.test_object_config);
+            // if (envData.database_config.length === 0) {
+            //     alert('请至少添加一个数据库配置');
+            //     return;
+            // }
 
             $('#addEnvModal').modal('hide');
             // 这里可以添加实际的保存逻辑
-            $.ajax({
-                url : "/front/evn/add/" ,
-                type: "post",
-                data: JSON.stringify(envData),
-                contentType: "application/json",
-                {#dataType:"JSON",#}
-                success:function (res) {
-                    if (res.success){
-                        alert('环境配置保存成功！');
-                        location.reload();
-                    }else{
-                        alert('保存出错');
-                    }
+                if (editId) {
+                    url = '/front/evn/edit/?evn_id=' + editId
+                } else {
+                    url = '/front/evn/add/'
                 }
-            })
+                $.ajax({
+                    url : url,
+                    type: "post",
+                    data: JSON.stringify(envData),
+                    contentType: "application/json",
+                    dataType:"JSON",
+                    success:function (res) {
+                        if (res.success){
+                            alert('环境配置保存成功！');
+                            location.reload();
+                        }else{
+                            alert('保存出错');
+                        }
+                    }
+                })
+            editId = null; // 重置编辑ID
         });
 
         // 模态框关闭时重置表单
         $('#addEnvModal').on('hidden.bs.modal', function() {
             $('#add-env-form')[0].reset();
-            $('.test-target-item:gt(0)').remove();
-            $('.database-config-item:gt(0)').remove();
+            // $('.test-target-item:gt(0)').remove();
+            $('.test-target-item').remove();
+            $('.database-config-item').remove();
         });
     });
     function bindBtnEditEvent(evn_id){
                 editId = evn_id
-                console.log('dianjile bianji')
                 $.ajax({
                     url : "/front/evn/select/"+evn_id+"/",
                     type: "GET",
                     dataType:"JSON",
                     success:function (res) {
                             if (res.status){
-                                $('#edit-env-name').val(res.data.evn_name),
-                                $('#edit-env-project option:first').val(res.data.project_id).text(res.data.project_name),
-                                $('#edit-env-description').val(res.data.description),
-                                $('#description').val(res.data.description);
-                                $("#editEnvModal").modal("show");
+                                $('#new-env-name').val(res.data.evn_name);
+                                $('#new-env-project option[value="' + res.data.project_id + '"]').prop('selected', true);
+                                $('#new-env-project option[value="test"]').remove();
+                                $('#new-env-description').val(res.data.description);
+                                console.log('测试对象配置：', res.data.test_object_config);
+                                console.log('数据库配置：', res.data.database_config);
+                                $.each(res.data.test_object_config, function(index, target) {
+                                    var newItem = `
+                                            <div class="test-target-item panel panel-default">
+                                                <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <h5 class="panel-title">测试对象 #${index+1}</h5>
+                                                    <button type="button" class="btn btn-xs btn-danger remove-test-target">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>对象名称</label>
+                                                                <input type="text" class="form-control test-target-name" name="evn_name" value="${target.name}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>访问地址</label>
+                                                                <input type="text" class="form-control test-target-url" value="${target.url}" name="url" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>端口号</label>
+                                                                <input type="number" class="form-control test-target-port" value="${target.port}" name="port" min="1" max="65535">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>协议类型</label>
+                                                                <select class="form-control test-target-protocol ">
+                                                                    <option value="HTTP">HTTP</option>
+                                                                    <option value="MQTT">MQTT</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    $('.test-targets-container').append(newItem);})
+                                $.each(res.data.database_config, function(index, db) {
+                                    var dbItem = `
+                                            <div class="database-config-item panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">数据库配置 #${index+1}</h5>
+                                                    <button type="button" class="btn btn-xs btn-danger remove-database-config">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>数据库类型</label>
+                                                                <select class="form-control database-type" required>
+                                                                    <option value="mysql">MySQL</option>
+                                                                    <option value="oracle">Oracle</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>数据库名称</label>
+                                                                <input type="text" class="form-control database-name" value="${db.name}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>主机地址</label>
+                                                                <input type="text" class="form-control database-host" value="${db.host}" placeholder="如：localhost" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>端口号</label>
+                                                                <input type="number" class="form-control database-port" value="${db.port}" placeholder="如：3306" min="1" max="65535" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>用户名</label>
+                                                                <input type="text" class="form-control database-username" value="${db.username}" placeholder="数据库用户名" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>密码</label>
+                                                                <input type="password" class="form-control database-password" value="${db.password}" placeholder="数据库密码" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>`
+                                    $('.database-configs-container').append(dbItem);
+                                    $('.database-type').val(db.type);
+
+                                                })
+                            $("#addEnvModal").modal("show");
                             }else {
                                 alert(res.error);
-
                                 }
                     }
                 });

@@ -25,5 +25,6 @@ urlpatterns = [
     path('evn/add/', views.evn_add),
     path('evn/delete/<int:evn_id>/', views.evn_delete),
     path('evn/select/<int:evn_id>/', views.evn_select),
+    path('evn/edit/', views.evn_edit),
 
 ]

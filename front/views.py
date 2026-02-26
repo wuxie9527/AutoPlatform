@@ -90,7 +90,6 @@ def evn_list(request):
 
 def evn_add(request):
     data = json.loads(request.body)
-    print(data)
     form = forms.evnConfigModelForm(data)
     if form.is_valid():
         form.save()
@@ -115,6 +114,18 @@ def evn_select(request,evn_id):
         'database_config': querylist.database_config,
     }
     return JsonResponse({"data": data, "status": 200})
+
+def evn_edit(request):
+    evn_id = request.GET.get("evn_id")
+    row_object = models.evn_config.objects.filter(id=evn_id).first()
+    if not row_object:
+        return JsonResponse({"success": False, 'error': "数据错误"})
+    data = json.loads(request.body)
+    print("前端传来的数据======================================================================：", data)
+    form = forms.evnConfigModelForm(data, instance=row_object)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "status": 200})
 
 
 

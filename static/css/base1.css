@@ -81,14 +81,14 @@
             background-color: rgba(255, 255, 255, 0.05);
         }
                 /* 折叠菜单箭头动画 */
-        .sidebar .nav .collapse-toggle:after {
+        .sidebar .nav .collapse-toggle::after {
             content: '\f107';
             font-family: 'FontAwesome';
             float: right;
             transition: transform 0.3s;
         }
 
-        .sidebar .nav .collapse-toggle.collapsed:after {
+        .sidebar .nav .collapse-toggle.collapsed::after {
             transform: rotate(-90deg);
         }
 
