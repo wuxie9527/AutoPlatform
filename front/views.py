@@ -121,16 +121,27 @@ def evn_edit(request):
     if not row_object:
         return JsonResponse({"success": False, 'error': "数据错误"})
     data = json.loads(request.body)
-    print("前端传来的数据======================================================================：", data)
     form = forms.evnConfigModelForm(data, instance=row_object)
     if form.is_valid():
         form.save()
         return JsonResponse({"success": True, "status": 200})
 
+#变量管理
+def variable_list(request):
+    variable_querylist = models.variable.objects.filter()
+    evn_list = models.evn_config.objects.all()
+    type_list = models.variable.TYPE_CHOICES
+    content = {
+        "variable_querylist": variable_querylist,
+        "evn_list": evn_list,
+        "type_list": type_list
+    }
+    return render(request, 'project/variable.html', content)
 
-
-
-
-
-
-
+def variable_add(request):
+    print('接到前端传的数据==============================================',request.POST)
+    form = forms.variableModelForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "status": 200})
+    return JsonResponse({"success": False, "error": form.errors})

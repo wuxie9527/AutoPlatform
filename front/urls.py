@@ -26,5 +26,11 @@ urlpatterns = [
     path('evn/delete/<int:evn_id>/', views.evn_delete),
     path('evn/select/<int:evn_id>/', views.evn_select),
     path('evn/edit/', views.evn_edit),
+    #变量管理
+    path('variable/list/', views.variable_list),
+    path('variable/add/', views.variable_add),
+    # path('variable/delete/<int:var_id>/', views.variable_delete),
+    # path('variable/select/<int:var_id>/', views.variable_select),
+    # path('variable/edit/', views.variable_edit),
 
 ]

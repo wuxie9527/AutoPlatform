@@ -39,6 +39,28 @@ class evn_config(models.Model):
         # 同一项目下环境名称不能重复
         unique_together = ['project', 'evn_name']
 
+class variable(models.Model):
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=100)
+    TYPE_CHOICES = (
+        ('val', '变量'),
+        ('header', '请求头'),
+    )
+    var_type = models.CharField(max_length=20, verbose_name='变量类型', choices=TYPE_CHOICES)
+    evn = models.ForeignKey(
+        evn_config,
+        on_delete=models.CASCADE,
+        related_name='variables',
+        verbose_name='所属环境'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        db_table = 'variable'  # 明确指定表名
+        verbose_name = '变量'
+        verbose_name_plural = '变量'
+
 
 
 

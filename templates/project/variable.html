@@ -1,0 +1,369 @@
+{% extends "../base1.html" %}
+
+    {% block css %}
+
+    {% endblock %}
+
+
+
+
+
+{% block body %}
+
+        <!-- 筛选区域 -->
+        <div class="filter-panel">
+            <div class="filter-row">
+                <div class="filter-item ">
+                    <div>
+                        <label for="variable-name">变量名</label>
+                    </div>
+                    <div>
+                        <input id="variable-name" class="form-control input-sm">
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label for="project">所属环境</label>
+                    <input id="env-name" class="form-control input-sm">
+                </div>
+                <div class="filter-item">
+                    <label for="project">类型</label>
+                    <input id="variable-type" class="form-control input-sm">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-refresh"></i> 重置
+                </button>
+                <button type="button" class="btn btn-primary btn-sm">
+                    <i class="fa fa-search"></i> 查询
+                </button>
+            </div>
+        </div>
+
+        <!-- 数据主表格区域 -->
+        <div class="main-panel">
+        <!-- 操作按钮区域 -->
+        <div class="table-actions">
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" id="add-val-btn">
+                    <i class="fa fa-plus"></i> 新增变量
+                </button>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-upload"></i> 批量导入
+                </button>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-download"></i> 导出
+                </button>
+            </div>
+            <div>
+                <button type="button" class="btn btn-default btn-sm btn-outline">
+                    <i class="fa fa-refresh"></i> 刷新
+                </button>
+            </div>
+        </div>
+
+        <!-- 表格数据区域 -->
+            <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th class="select-column">
+                        <input type="checkbox" id="select-all" class="select-checkbox">
+                    </th>
+                    <th>ID</th>
+                    <th>key</th>
+                    <th>value</th>
+                    <th>类型</th>
+                    <th>所属环境</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for var in variable_querylist %}
+                    <tr>
+                        <td class="select-column">
+                            <input type="checkbox" class="select-checkbox case-select" data-id="{{ var.id }}">
+                        </td>
+                        <td>{{ var.id }}</td>
+                        <td>{{ var.key }}</td>
+                        <td>{{ var.value }}</td>
+                        <td>{{ var.get_var_type_display }}</td>
+                        <td>{{ var.evn.evn_name }}</td>
+                        <td>{{ var.updated_at|date:"Y-n-j H:i:s" }}</td>
+                        <td>
+                            <div class="action-box">
+                               <div class="action-item">
+                                   <i class="fa fa-pencil action-icon"></i>
+                                   <button class="action-text" style="color: inherit; border: none;
+                                   outline: none;background: transparent;" onclick="bindBtnEditEvent({{ var.id }})">编辑</button>
+                               </div>
+
+                                <div class="action-item">
+                                    <i class="fa fa-trash action-icon"></i>
+                                    <a class="action-text" style="color: inherit;" href="/front/variable/delete/{{ var.id }}/">删除</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+        <!-- 新增模态框 -->
+        <div class="modal fade" id="addValModal" tabindex="-1" role="dialog" aria-labelledby="addValModalLabel">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                     </button>
+                <h4 class="modal-title" id="addValModalLabel">新增变量</h4>
+            </div>
+            <div class="modal-body">
+                <form id="add-val-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-val-name">变量名 *</label>
+                                <input type="text" class="form-control" name="key" id="new-val-name" placeholder="请输入变量名" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-val-value">变量值</label>
+                                <input type="text" class="form-control" name="value" id="new-val-value" placeholder="请输入变量值" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-val-evn">所属环境</label>
+                                <select class="form-control" id="new-val-evn" name="evn" required>
+                                    <option value="demo" selected>请选择所属环境</option>
+                                    {% for evn in evn_list %}
+                                        <option value={{ evn.id }}>{{ evn.evn_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-val-type">类型</label>
+                                <select class="form-control" id="new-val-type" name="var_type" required>
+                                    <option value="demo" selected>请选择变量类型</option>
+                                    {% for type in type_list %}
+                                        <option value={{ type.0 }}>{{ type.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <!-- <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="new-val-description">描述</label>
+                                <input type="text" class="form-control" id="new-val-description" name="description">
+                            </div>
+                        </div> -->
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="save-val-btn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+    let editId = null
+    $(document).ready(function() {
+        //编辑环境对象
+        bindBtnEditEvent();
+
+        // 新增弹出模太框
+        $('#add-val-btn').click(function() {
+            $('#addValModal').modal('show');
+        });
+
+
+        // 保存变量配置
+        $('#save-val-btn').click(function(e) {
+            console.log("点击了保存按钮")
+            e.preventDefault();
+            // var valData = {
+            //     var_name: $('#new-val-name').val(),
+            //     var_value: $('#new-val-value').val(),
+            //     evn_id: $('#new-val-evn').val(),
+            //     type: $('#new-val-type').val()
+            // };
+            // 验证数据
+            // if (!valData.var_name || !valData.var_value || !valData.evn_id || !valData.type) {
+            //     alert('请填写完整的变量信息');
+            //     return;
+            // }
+            // 这里可以添加实际的保存逻辑
+                if (editId) {
+                    url = '/front/variable/edit/?var_id=' + editId
+                } else {
+                    url = '/front/variable/add/'
+                }
+                $.ajax({
+                    url : url,
+                    type: "post",
+                    // data: JSON.stringify(valData),
+                    data: $("#add-val-form").serialize(),
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    dataType:"JSON",
+                    success:function (res) {
+                        if (res.success){
+                            alert('变量配置保存成功！');
+                            location.reload();
+                        }else{
+                            alert(JSON.stringify(res.error) || '保存失败，请重试！');
+                        }
+                    }
+                })
+             $('#addvalModal').modal('hide');
+            editId = null; // 重置编辑ID
+        });
+
+        // 模态框关闭时重置表单
+        $('#addValModal').on('hidden.bs.modal', function() {
+            $('#add-val-form')[0].reset();
+        });
+    });
+        //编辑环境对象
+    function bindBtnEditEvent(evn_id){
+                editId = evn_id
+                $.ajax({
+                    url : "/front/evn/select/"+evn_id+"/",
+                    type: "GET",
+                    dataType:"JSON",
+                    success:function (res) {
+                            if (res.status){
+                                $('#new-env-name').val(res.data.evn_name);
+                                $('#new-env-project option[value="' + res.data.project_id + '"]').prop('selected', true);
+                                $('#new-env-project option[value="test"]').remove();
+                                $('#new-env-description').val(res.data.description);
+                                console.log('测试对象配置：', res.data.test_object_config);
+                                console.log('数据库配置：', res.data.database_config);
+                                $.each(res.data.test_object_config, function(index, target) {
+                                    var newItem = `
+                                            <div class="test-target-item panel panel-default">
+                                                <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <h5 class="panel-title">测试对象 #${index+1}</h5>
+                                                    <button type="button" class="btn btn-xs btn-danger remove-test-target">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>对象名称</label>
+                                                                <input type="text" class="form-control test-target-name" name="evn_name" value="${target.name}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>访问地址</label>
+                                                                <input type="text" class="form-control test-target-url" value="${target.url}" name="url" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>端口号</label>
+                                                                <input type="number" class="form-control test-target-port" value="${target.port}" name="port" min="1" max="65535">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>协议类型</label>
+                                                                <select class="form-control test-target-protocol ">
+                                                                    <option value="HTTP">HTTP</option>
+                                                                    <option value="MQTT">MQTT</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    $('.test-targets-container').append(newItem);})
+                                $.each(res.data.database_config, function(index, db) {
+                                    var dbItem = `
+                                            <div class="database-config-item panel panel-default">
+                                                <div class="panel-heading">
+                                                    <h5 class="panel-title">数据库配置 #${index+1}</h5>
+                                                    <button type="button" class="btn btn-xs btn-danger remove-database-config">
+                                                        <i class="fa fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="panel-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>数据库类型</label>
+                                                                <select class="form-control database-type" required>
+                                                                    <option value="mysql">MySQL</option>
+                                                                    <option value="oracle">Oracle</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>数据库名称</label>
+                                                                <input type="text" class="form-control database-name" value="${db.name}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>主机地址</label>
+                                                                <input type="text" class="form-control database-host" value="${db.host}" placeholder="如：localhost" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>端口号</label>
+                                                                <input type="number" class="form-control database-port" value="${db.port}" placeholder="如：3306" min="1" max="65535" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>用户名</label>
+                                                                <input type="text" class="form-control database-username" value="${db.username}" placeholder="数据库用户名" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>密码</label>
+                                                                <input type="password" class="form-control database-password" value="${db.password}" placeholder="数据库密码" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>`
+                                    $('.database-configs-container').append(dbItem);
+                                    $('.database-type').val(db.type);
+
+                                                })
+                            $("#addEnvModal").modal("show");
+                            }else {
+                                alert(res.error);
+                                }
+                    }
+                });
+            }
+    </script>
+
+{% endblock %}

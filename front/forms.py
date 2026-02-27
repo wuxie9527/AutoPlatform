@@ -22,3 +22,7 @@ class evnConfigModelForm(forms.ModelForm):
         fields = '__all__'
 
 
+class variableModelForm(forms.ModelForm):
+    class Meta:
+        model = variable
+        fields = '__all__'
