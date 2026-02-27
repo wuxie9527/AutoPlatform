@@ -61,6 +61,36 @@ class variable(models.Model):
         verbose_name = '变量'
         verbose_name_plural = '变量'
 
+class interface(models.Model):
+    interface_name = models.CharField(max_length=50)
+    url = models.CharField(max_length=200)
+    method_choices = (
+        ('GET', 'GET'),
+        ('POST', 'POST'),
+        ('PUT', 'PUT'),
+        ('DELETE', 'DELETE'),
+        ('PATCH', 'PATCH'),
+    )      
+    method = models.CharField(max_length=10, choices=method_choices)
+    description = models.CharField(max_length=100, blank=True, null=True)
+    hearder = models.CharField(verbose_name='请求头',max_length=50)  
+    project = models.ForeignKey(
+        project,
+        on_delete=models.CASCADE,
+        related_name='interfaces',
+        verbose_name='所属项目'
+    )
+    parameters = models.JSONField(verbose_name='请求参数', blank=True, null=True, default=dict)
+    test_object = models.JSONField(verbose_name='测试对象', blank=True, null=True, default=dict)
+    check_interface = models.CharField(verbose_name='校验接口', blank=True, null=True, max_length=50)
+    check_db = models.CharField(verbose_name='校验数据库', blank=True, null=True)
+    export_variable = models.CharField(verbose_name='导出变量', blank=True, null=True, max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
+    class Meta:
+        db_table = 'interface'  # 明确指定表名
+        verbose_name = '接口管理'
+        verbose_name_plural = '接口管理'
 
 
