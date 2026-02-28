@@ -305,8 +305,8 @@
 
         /* 选择框样式 */
         .select-column {
-            text-align: center;
-            width: 50px;
+            /* text-align: center; */
+            width: 10px;
         }
 
         .select-checkbox {

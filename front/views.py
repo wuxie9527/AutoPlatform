@@ -148,7 +148,6 @@ def variable_add(request):
 #接口管理
 def interface_list(request):
     interface_querylist = models.interface.objects.filter()
-    print(list(interface_querylist.values()))
     evn_list = models.evn_config.objects.values_list("test_object_config", flat=True)
     type_list = models.interface.method_choices
     header_list = models.variable.objects.values_list("key", flat=True).filter(var_type="header")

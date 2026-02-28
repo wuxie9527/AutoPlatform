@@ -19,7 +19,7 @@
             width: 100%;
             table-layout: fixed; /* 关键：固定布局 */
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 14px;
         }
         .data-table th {
             text-align: left;
@@ -30,13 +30,12 @@
         /* ID列固定宽度 */
         .data-table th:nth-child(2),
         .data-table td:nth-child(2) {
-            width: 60px;
+            width: 40px;
         }
         /* 操作列固定宽度 */
         .data-table th:last-child,
         .data-table td:last-child {
-            width: 100px;
-            text-align: center;
+            width: 140px;
         }
         .data-table th:not(:first-child):not(:last-child):not(:nth-child(2)),
         .data-table td:not(:first-child):not(:last-child):not(:nth-child(2)) {
@@ -47,7 +46,6 @@
             white-space: nowrap;
             text-overflow: ellipsis;
         }
-
 
     </style>
 
@@ -127,6 +125,7 @@
                     <th>接口校验</th>
                     <th>数据库校验</th>
                     <th>输出变量</th>
+                    <th>所属项目</th>
                     <th>更新时间</th>
                     <th>操作</th>
                 </tr>
@@ -147,6 +146,7 @@
                         <td>{{ var.check_interface }}</td>
                         <td>{{ var.check_db }}</td>
                         <td>{{ var.export_variable }}</td>
+                        <td>{{ var.project.prj_name }}</td>
                         <td>{{ var.updated_at|date:"Y-n-j H:i:s" }}</td>
                         <td>
                             <div class="action-box">
@@ -155,10 +155,15 @@
                                    <button class="action-text" style="color: inherit; border: none;
                                    outline: none;background: transparent;" onclick="bindBtnEditEvent({{ var.id }})">编辑</button>
                                </div>
+                               <div class="action-item">
+                                   <i class="fa fa-copy action-icon"></i>
+                                   <button class="action-text" style="color: inherit; border: none;
+                                   outline: none;background: transparent;" onclick="bindBtnCopyEvent({{ var.id }})">复制</button>
+                               </div>
 
                                 <div class="action-item">
                                     <i class="fa fa-trash action-icon"></i>
-                                    <a class="action-text" style="color: inherit;" href="/front/variable/delete/{{ var.id }}/">删除</a>
+                                    <a class="action-text" style="color: inherit;" href="/front/interface/delete/{{ var.id }}/">删除</a>
                                 </div>
                             </div>
                         </td>
@@ -191,7 +196,7 @@
                             <div class="form-group">
                                 <label for="new-interface-method">接口类型</label>
                                 <select class="form-control" id="new-interface-method" name="method" required>
-                                    <option value="demo" disabled selected hidden>请选择接口类型</option>
+                                    <option value="demo" disabled selected hidden >请选择接口类型</option>
                                     {% for type in type_list %}
                                         <option value={{ type.0 }}>{{ type.1 }}</option>
                                     {% endfor %}
