@@ -32,5 +32,11 @@ urlpatterns = [
     # path('variable/delete/<int:var_id>/', views.variable_delete),
     # path('variable/select/<int:var_id>/', views.variable_select),
     # path('variable/edit/', views.variable_edit),
+    #接口管理
+    path('interface/list/', views.interface_list),
+    path('interface/add/', views.interface_add),
+    # path('interface/delete/<int:interface_id>/', views.interface_delete),
+    # path('interface/select/<int:interface_id>/', views.interface_select),
+    # path('interface/edit/', views.interface_edit),
 
 ]

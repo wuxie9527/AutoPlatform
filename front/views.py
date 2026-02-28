@@ -139,8 +139,31 @@ def variable_list(request):
     return render(request, 'project/variable.html', content)
 
 def variable_add(request):
-    print('接到前端传的数据==============================================',request.POST)
     form = forms.variableModelForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "status": 200})
+    return JsonResponse({"success": False, "error": form.errors})
+
+#接口管理
+def interface_list(request):
+    interface_querylist = models.interface.objects.filter()
+    print(list(interface_querylist.values()))
+    evn_list = models.evn_config.objects.values_list("test_object_config", flat=True)
+    type_list = models.interface.method_choices
+    header_list = models.variable.objects.values_list("key", flat=True).filter(var_type="header")
+    project_list = models.project.objects.all()
+    content = {
+        "interface_querylist": interface_querylist,
+        "test_object_list": evn_list,
+        "type_list": type_list,
+        "header_list": header_list,
+        "project_list": project_list
+    }
+    return render(request, 'project/interface.html', content)
+
+def interface_add(request):
+    form = forms.interfaceModelForm(request.POST)
     if form.is_valid():
         form.save()
         return JsonResponse({"success": True, "status": 200})

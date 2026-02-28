@@ -1,11 +1,58 @@
 {% extends "../base1.html" %}
 
     {% block css %}
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+        }
+         /* 表格容器 */
+        .table-container {
+            max-width: 100%;
+            width: 100%;
+            overflow-x: auto;
+            background: white;
+        }
+        
+        /* 固定宽度表格 */
+        .data-table {
+            width: 100%;
+            table-layout: fixed; /* 关键：固定布局 */
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .data-table th {
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+        /* ID列固定宽度 */
+        .data-table th:nth-child(2),
+        .data-table td:nth-child(2) {
+            width: 60px;
+        }
+        /* 操作列固定宽度 */
+        .data-table th:last-child,
+        .data-table td:last-child {
+            width: 100px;
+            text-align: center;
+        }
+        .data-table th:not(:first-child):not(:last-child):not(:nth-child(2)),
+        .data-table td:not(:first-child):not(:last-child):not(:nth-child(2)) {
+            width: 90px; /* 总宽减去固定列，除以中间列数 */
+        }
+        .data-table td:not(:last-child) {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
 
+
+    </style>
+
+        
     {% endblock %}
-
-
-
 
 
 {% block body %}
@@ -45,8 +92,8 @@
         <!-- 操作按钮区域 -->
         <div class="table-actions">
             <div>
-                <button type="button" class="btn btn-primary btn-sm" id="add-val-btn">
-                    <i class="fa fa-plus"></i> 新增变量
+                <button type="button" class="btn btn-primary btn-sm" id="add-interface-btn">
+                    <i class="fa fa-plus"></i> 新增接口
                 </button>
                 <button type="button" class="btn btn-default btn-sm btn-outline">
                     <i class="fa fa-upload"></i> 批量导入
@@ -63,7 +110,7 @@
         </div>
 
         <!-- 表格数据区域 -->
-            <div class="table-responsive">
+            <div class="table-container">
             <table class="data-table">
                 <thead>
                 <tr>
@@ -71,25 +118,35 @@
                         <input type="checkbox" id="select-all" class="select-checkbox">
                     </th>
                     <th>ID</th>
-                    <th>key</th>
-                    <th>value</th>
-                    <th>类型</th>
-                    <th>所属环境</th>
+                    <th >接口名称</th>
+                    <th >测试对象</th>
+                    <th >测试地址</th>
+                    <th >接口类型</th>
+                    <th>请求头</th>
+                    <th >请求体</th>
+                    <th>接口校验</th>
+                    <th>数据库校验</th>
+                    <th>输出变量</th>
                     <th>更新时间</th>
                     <th>操作</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for var in variable_querylist %}
+                {% for var in interface_querylist %}
                     <tr>
                         <td class="select-column">
                             <input type="checkbox" class="select-checkbox case-select" data-id="{{ var.id }}">
                         </td>
                         <td>{{ var.id }}</td>
-                        <td>{{ var.key }}</td>
-                        <td>{{ var.value }}</td>
-                        <td>{{ var.get_var_type_display }}</td>
-                        <td>{{ var.evn.evn_name }}</td>
+                        <td>{{ var.interface_name }}</td>
+                        <td>{{ var.test_object }}</td>
+                        <td>{{ var.url }}</td>
+                        <td>{{ var.get_method_display }}</td>
+                        <td>{{ var.header }}</td>
+                        <td>{{ var.body }}</td>
+                        <td>{{ var.check_interface }}</td>
+                        <td>{{ var.check_db }}</td>
+                        <td>{{ var.export_variable }}</td>
                         <td>{{ var.updated_at|date:"Y-n-j H:i:s" }}</td>
                         <td>
                             <div class="action-box">
@@ -112,65 +169,107 @@
             </div>
 
         <!-- 新增模态框 -->
-        <div class="modal fade" id="addValModal" tabindex="-1" role="dialog" aria-labelledby="addValModalLabel">
+        <div class="modal fade" id="addInterfaceModal" tabindex="-1" role="dialog" aria-labelledby="addInterfaceModalLabel">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                   <div class="modal-header">
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                      </button>
-                <h4 class="modal-title" id="addValModalLabel">新增变量</h4>
+                <h4 class="modal-title" id="addInterfaceModalLabel">新增接口</h4>
             </div>
             <div class="modal-body">
-                <form id="add-val-form">
+                <form id="add-interface-form">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="new-val-name">变量名 *</label>
-                                <input type="text" class="form-control" name="key" id="new-val-name" placeholder="请输入变量名" required>
+                                <label for="new-interface-name">接口名称 *</label>
+                                <input type="text" class="form-control" name="interface_name" id="new-interface-name" placeholder="请输入接口名称" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="new-val-value">变量值</label>
-                                <input type="text" class="form-control" name="value" id="new-val-value" placeholder="请输入变量值" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="new-val-evn">所属环境</label>
-                                <select class="form-control" id="new-val-evn" name="evn" required>
-                                    <option value="demo" disabled selected hidden>请选择所属环境</option>
-                                    {% for evn in evn_list %}
-                                        <option value={{ evn.id }}>{{ evn.evn_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="new-val-type">类型</label>
-                                <select class="form-control" id="new-val-type" name="var_type" required>
-                                    <option value="demo" disabled selected hidden>请选择变量类型</option>
+                                <label for="new-interface-method">接口类型</label>
+                                <select class="form-control" id="new-interface-method" name="method" required>
+                                    <option value="demo" disabled selected hidden>请选择接口类型</option>
                                     {% for type in type_list %}
                                         <option value={{ type.0 }}>{{ type.1 }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                        <!-- <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label for="new-val-description">描述</label>
-                                <input type="text" class="form-control" id="new-val-description" name="description">
+                                <label for="new-interface-test-object">测试对象</label>
+                                <select class="form-control" id="new-interface-test-object" name="test_object" required>
+                                    <option value="demo" disabled selected hidden>请选择测试对象</option>
+                                    {% for test_object in test_object_list %}
+                                        {% if test_object %}
+                                        <option value="{{ test_object.0.name }}">{{ test_object.0.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
                             </div>
-                        </div> -->
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-interface-header">请求头</label>
+                                <select class="form-control" id="new-interface-header" name="header" required>
+                                    <option value="demo" disabled selected hidden>请选择请求头</option>
+                                    {% for header in header_list %}
+                                        <option value="{{ header }}">{{ header }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-interface-url">测试地址</label>
+                                <input type="text" class="form-control" name="url" id="new-interface-url" placeholder="请输入接口地址" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new-interface-project">所属项目</label>
+                                <select class="form-control" id="new-interface-project" name="project" required>
+                                    <option value="demo" disabled selected hidden>请选择所属项目</option>
+                                    {% for project in project_list %}
+                                        <option value="{{ project.prj_id }}">{{ project.prj_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="new-interface-body">请求体</label>
+                                <textarea class="form-control" name="body" id="new-interface-body" placeholder="请输入请求体内容" rows=3></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="new-interface-check">接口校验</label>
+                                <textarea class="form-control" name="check_interface" id="new-interface-check" placeholder="请输入接口校验内容" rows=1></textarea>
+                            </div>
+                        </div><div class="col-md-12">
+                            <div class="form-group">
+                                <label for="new-interface-db-check">数据库校验</label>
+                                <textarea class="form-control" name="check_db" id="new-interface-db-check" placeholder="请输入数据库校验内容" rows=4></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="new-interface-export-variable">输出变量</label>
+                                <input type="text" class="form-control" id="new-interface-export-variable" name="export_variable" placeholder="请输入输出变量名称，多个变量请用逗号分隔">
+                            </div>
+                        </div>
                     </div>
 
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="save-val-btn">保存</button>
+                <button type="button" class="btn btn-primary" id="save-interface-btn">保存</button>
             </div>
         </div>
     </div>
@@ -185,13 +284,13 @@
         bindBtnEditEvent();
 
         // 新增弹出模太框
-        $('#add-val-btn').click(function() {
-            $('#addValModal').modal('show');
+        $('#add-interface-btn').click(function() {
+            $('#addInterfaceModal').modal('show');
         });
 
 
-        // 保存变量配置
-        $('#save-val-btn').click(function(e) {
+        // 保存接口配置
+        $('#save-interface-btn').click(function(e) {
             e.preventDefault();
             // var valData = {
             //     var_name: $('#new-val-name').val(),
@@ -206,40 +305,40 @@
             // }
             // 这里可以添加实际的保存逻辑
                 if (editId) {
-                    url = '/front/variable/edit/?var_id=' + editId
+                    url = '/front/interface/edit/?interface_id=' + editId
                 } else {
-                    url = '/front/variable/add/'
+                    url = '/front/interface/add/'
                 }
                 $.ajax({
                     url : url,
                     type: "post",
                     // data: JSON.stringify(valData),
-                    data: $("#add-val-form").serialize(),
+                    data: $("#add-interface-form").serialize(),
                     contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                     dataType:"JSON",
                     success:function (res) {
                         if (res.success){
-                            alert('变量配置保存成功！');
+                            alert('接口配置保存成功！');
                             location.reload();
                         }else{
                             alert(JSON.stringify(res.error) || '保存失败，请重试！');
                         }
                     }
                 })
-             $('#addvalModal').modal('hide');
+             $('#addInterfaceModal').modal('hide');
             editId = null; // 重置编辑ID
         });
 
         // 模态框关闭时重置表单
-        $('#addValModal').on('hidden.bs.modal', function() {
-            $('#add-val-form')[0].reset();
+        $('#addInterfaceModal').on('hidden.bs.modal', function() {
+            $('#add-interface-form')[0].reset();
         });
     });
         //编辑环境对象
     function bindBtnEditEvent(evn_id){
                 editId = evn_id
                 $.ajax({
-                    url : "/front/evn/select/"+evn_id+"/",
+                    url : "/front/interface/select/"+evn_id+"/",
                     type: "GET",
                     dataType:"JSON",
                     success:function (res) {
@@ -363,6 +462,16 @@
                     }
                 });
             }
+    document.addEventListener('DOMContentLoaded', function() {
+            const cells = document.querySelectorAll('.data-table td:not(:last-child)');
+            cells.forEach(cell => {
+                if (cell.scrollWidth > cell.clientWidth) {
+                    if (!cell.title) {
+                        cell.title = cell.textContent;
+                    }
+                }
+            });
+        });
     </script>
 
 {% endblock %}

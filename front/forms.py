@@ -26,3 +26,11 @@ class variableModelForm(forms.ModelForm):
     class Meta:
         model = variable
         fields = '__all__'
+
+class interfaceModelForm(forms.ModelForm):
+    class Meta:
+        model = interface
+        fields = '__all__'
+
+    def __str__(self):
+        return super().__str__()
