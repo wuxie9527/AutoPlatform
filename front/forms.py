@@ -6,6 +6,7 @@
 from django import forms
 from front.models import *
 from django.core.validators import RegexValidator, ValidationError
+import json
 
 
 class projectModelForm(forms.ModelForm):
@@ -26,11 +27,27 @@ class variableModelForm(forms.ModelForm):
     class Meta:
         model = variable
         fields = '__all__'
+    
 
 class interfaceModelForm(forms.ModelForm):
     class Meta:
         model = interface
         fields = '__all__'
+    
+    def clean_body(self):
+        body = self.cleaned_data.get('body', '')
+        if body:
+            try:
+                return json.loads(body)
+            except json.JSONDecodeError:
+                raise forms.ValidationError("body必须是有效的JSON格式")
+        return {}
 
     def __str__(self):
         return super().__str__()
+
+
+class testCaseModelForm(forms.ModelForm):
+    class Meta:
+        model = test_case
+        fields = '__all__'

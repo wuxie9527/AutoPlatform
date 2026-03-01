@@ -90,5 +90,26 @@ class interface(models.Model):
         db_table = 'interface'  # 明确指定表名
         verbose_name = '接口管理'
         verbose_name_plural = '接口管理'
+        ordering = ['-created_at']
 
+class test_case(models.Model):
+    case_name = models.CharField(max_length=50)
+    project = models.ForeignKey(
+        project,
+        on_delete=models.CASCADE,
+        related_name='test_cases',
+        verbose_name='所属项目'
+    )
+    description = models.CharField(max_length=100, blank=True, null=True)
+    steps = models.JSONField(verbose_name='测试步骤', blank=True, null=True, default=list)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
+    def __str__(self):
+        return self.case_name
+    
+    class Meta:
+        db_table = 'test_case'  # 明确指定表名
+        verbose_name = '测试用例'
+        verbose_name_plural = '测试用例'
+        ordering = ['-created_at']

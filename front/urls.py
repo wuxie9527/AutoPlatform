@@ -38,5 +38,10 @@ urlpatterns = [
     # path('interface/delete/<int:interface_id>/', views.interface_delete),
     # path('interface/select/<int:interface_id>/', views.interface_select),
     # path('interface/edit/', views.interface_edit),
-
+    #测试用例管理
+    path('case/list/', views.case_list),
+    # path('case/add/', views.case_add),
+    # path('case/delete/<int:case_id>/', views.case_delete),
+    # path('case/select/<int:case_id>/', views.case_select),
+    # path('case/edit/', views.case_edit),
 ]

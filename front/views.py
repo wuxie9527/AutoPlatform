@@ -140,6 +140,7 @@ def variable_list(request):
 
 def variable_add(request):
     form = forms.variableModelForm(request.POST)
+    print(form)
     if form.is_valid():
         form.save()
         return JsonResponse({"success": True, "status": 200})
@@ -167,3 +168,18 @@ def interface_add(request):
         form.save()
         return JsonResponse({"success": True, "status": 200})
     return JsonResponse({"success": False, "error": form.errors})
+
+#测试用例管理
+def case_list(request):
+    interface_list = models.interface.objects.all()
+    test_object_list = models.evn_config.objects.values_list("test_object_config", flat=True)
+    type_list = models.interface.method_choices
+    project_list = models.project.objects.all()
+    content = {
+        "interface_querylist": interface_list,
+        "case_querylist": models.test_case.objects.all(),
+        "test_object_list": test_object_list,
+        "type_list": type_list,
+        "project_list": project_list
+    }
+    return render(request, 'project/test_case.html', content)
