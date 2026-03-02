@@ -212,6 +212,28 @@
         .data-table tbody tr:hover {
             background-color: #f9f9f9;
         }
+        //interface-table样式
+        .interface-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .interface-table th {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 2px solid #e7eaec;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .interface-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e7eaec;
+            vertical-align: middle;
+        }
+
+        .interface-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
 
         /* 状态标签样式 */
         .status-badge {

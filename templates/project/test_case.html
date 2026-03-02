@@ -21,12 +21,35 @@
             border-collapse: collapse;
             font-size: 14px;
         }
+        .interface-table {
+            width: 100%;
+            table-layout: fixed; /* 关键：固定布局 */
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
         .data-table th {
             text-align: left;
             font-weight: 600;
             color: #333;
             border-bottom: 2px solid #dee2e6;
         }
+        .interface-table th {
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+        /* ID列固定宽度 */
+        .interface-table th:nth-child(2),
+        .interface-table td:nth-child(2) {
+            width: 40px;
+        }
+        .interface-table th:not(:first-child):not(:nth-child(2)),
+        .interface-table td:not(:first-child):not(:nth-child(2)) {
+            width: calc((100% - 40px) / 7); /* 总宽减去固定列，除以中间列数 */
+        }
+
         /* ID列固定宽度 */
         .data-table th:nth-child(2),
         .data-table td:nth-child(2) {
@@ -35,21 +58,53 @@
         /* 操作列固定宽度 */
         .data-table th:last-child,
         .data-table td:last-child {
-            width: 140px;
+            width: 300px;
         }
         .data-table th:not(:first-child):not(:last-child):not(:nth-child(2)),
         .data-table td:not(:first-child):not(:last-child):not(:nth-child(2)) {
-            width: 90px; /* 总宽减去固定列，除以中间列数 */
+            width: calc((100% - 340px) / 4); /* 总宽减去固定列，除以中间列数 */
         }
         .data-table td:not(:last-child) {
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
         }
-        .custom-modal-lg {
-            max-width: 80%;
-            min-width: 60%;
+        .interface-table td:not(:last-child) {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
+        .custom-modal-lg {
+            max-width: 90%;
+            min-width: 80%;
+        }
+        .inter-modal-lg {
+            max-width: 70%;
+            min-width: 50%;
+        }
+
+        .interface-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .interface-table th {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 2px solid #e7eaec;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .interface-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e7eaec;
+            vertical-align: middle;
+        }
+
+        .interface-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
 
     </style>
 
@@ -222,14 +277,15 @@
                                     <!-- 测试步骤表格 -->
                                     <div style="margin-top: 10px;">
                                         <div class="table-responsive">
-                                            <table class="table table-striped table-hover table-steps " id="stepTable">
+                                            <div class="table-container" id="stepTable">
+                                            <table class="data-table">
                                                 <thead>
                                                     <tr>
-                                                        <th >
+                                                        <th width="40px" class="select-column">
                                                             <input type="checkbox" id="selectAllSteps">
                                                         </th>
-                                                        <th >序号</th>
-                                                        <th >测试步骤</th>
+                                                        <th >ID</th>
+                                                        <th >步骤名称</th>
                                                         <th >测试地址</th>
                                                         <th >接口类型</th>
                                                         <th >请求头</th>
@@ -258,7 +314,7 @@
                     </div>
         <!-- 接口选择模态框 -->
                     <div class="modal fade blue-theme " id="addInterfaceModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog custom-modal-lg" role="document">
+                        <div class="modal-dialog inter-modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -273,43 +329,49 @@
                                         <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #666; cursor: pointer;"> </i> 
                                     </div>
                                     <!-- 接口列表 -->
-                                    <div class="interface-selector" id="interfaceList">
-                                        <div class="table-container">
-                                                    <table class="data-table">
-                                                        <thead>
-                                                        <tr>
-                                                            <th class="select-column">
-                                                                <input type="checkbox" id="select-all" class="select-checkbox">
-                                                             </th>
-                                                            <th>ID</th>
-                                                            <th >接口名称</th>
-                                                            <th >测试对象</th>
-                                                            <th >测试地址</th>
-                                                            <th >接口类型</th>
-                                                            <th>请求头</th>
-                                                            <th >请求体</th>
-                                                            <th>所属项目</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        {% for var in interface_querylist %}
-                                                            <tr>
-                                                                <td class="select-column">
-                                                                    <input type="checkbox" class="select-checkbox case-select" data-id="{{ var.id }}">
-                                                                </td>
-                                                                <td>{{ var.id }}</td>
-                                                                <td>{{ var.interface_name }}</td>
-                                                                <td>{{ var.test_object }}</td>
-                                                                <td>{{ var.url }}</td>
-                                                                <td>{{ var.get_method_display }}</td>
-                                                                <td>{{ var.header }}</td>
-                                                                <td>{{ var.body }}</td>
-                                                                <td>{{ var.project.prj_name }}</td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                    </div>
+                                <div class="table-responsive" style="margin-top: 10px;">
+                                    <div class="table-container">
+                                        <table class="interface-table" >
+                                            <thead>
+                                                 <tr>
+                                                    <th class="select-column">
+                                                            <input type="checkbox" id="interface_select-all" class="select-checkbox case-select interface-checkbox">
+                                                            </th>
+                                                    <th>ID</th>
+                                                    <th >接口名称</th>
+                                                    <th >测试对象</th>
+                                                    <th >测试地址</th>
+                                                    <th >接口类型</th>
+                                                    <th>请求头</th>
+                                                    <th >请求体</th>
+                                                    <th>所属项目</th>
+                                                    </tr>
+                                            </thead>
+                                            <tbody>
+                                                    {% for var in interface_querylist %}
+                                                    <tr>
+                                                        <td class="select-column">
+                                                            <input type="checkbox"  class="select-checkbox interface_case_select" data-id="{{ var.id }}"
+                                                            data-interface-name="{{ var.interface_name }}"
+                                                            data-test-object="{{ var.test_object }}"
+                                                            data-url="{{ var.url }}"
+                                                            data-method="{{ var.get_method_display }}"
+                                                            data-header="{{ var.header }}"
+                                                            data-body="{{ var.body }}"
+                                                            data-project="{{ var.project.prj_name }}">
+                                                        </td>
+                                                        <td>{{ var.id }}</td>
+                                                        <td>{{ var.interface_name }}</td>
+                                                        <td>{{ var.test_object }}</td>
+                                                        <td>{{ var.url }}</td>
+                                                        <td>{{ var.get_method_display }}</td>
+                                                        <td>{{ var.header }}</td>
+                                                        <td>{{ var.body }}</td>
+                                                        <td>{{ var.project.prj_name }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -340,67 +402,135 @@
             $('.step-checkbox').prop('checked', this.checked);
         });
 
-        // 搜索功能
-        $('#interfaceSearch').on('keyup', function() {
-            searchInterfaces($(this).val());
+    });
+    // 搜索功能
+    $('#interfaceSearch').on('keyup', function() {
+        searchInterfaces($(this).val());
+    });
+
+    // 新增弹出模太框 
+    $('#add-case-btn').click(function() {
+        $('#addTestcaseModal').modal('show');
+    });
+    //接口选择弹出模太框
+    $('#add-interface-btn').click(function() {
+        $('#addInterfaceModal').modal('show');
+    });
+
+    function addSelectedInterfaces() {
+        const selectinterfacellist = [];
+        $('.interface_case_select:checked').each(function() {
+            selectinterfacellist.push({
+                id: $(this).data('id'),
+                name: $(this).data('interface-name'),
+                url: $(this).data('url'),
+                header: $(this).data('header'),
+                body: $(this).data('body'),
+                method: $(this).data('method'),
+                project: $(this).data('project'),
+            });
+            console.log(selectinterfacellist);
+            
+        });
+        if (selectinterfacellist.length === 0) {
+            alert('请至少选择一个接口');
+            return;
+        }
+        // 这里可以将选中的接口ID发送到后端，或者直接在前端处理
+        selectinterfacellist.forEach((item, index) => {
+            addInterfaceAsStep(item,index);
         });
 
-        // 新增弹出模太框 
-        $('#add-case-btn').click(function() {
-            $('#addTestcaseModal').modal('show');
-        });
-        //接口选择弹出模太框
-        $('#add-interface-btn').click(function() {
-            $('#addInterfaceModal').modal('show');
-        });
+        // 清空选择
+        $('.interface_case_select').prop('checked', false);
+        $('#interface_select-all').prop('checked', false);
+        $('#addInterfaceModal').modal('hide');
+    }
 
-        // 保存接口配置
-        $('#save-testcase-btn').click(function(e) {
-            e.preventDefault();
-            // var valData = {
-            //     var_name: $('#new-val-name').val(),
-            //     var_value: $('#new-val-value').val(),
-            //     evn_id: $('#new-val-evn').val(),
-            //     type: $('#new-val-type').val()
-            // };
-            // 验证数据
-            // if (!valData.var_name || !valData.var_value || !valData.evn_id || !valData.type) {
-            //     alert('请填写完整的变量信息');
-            //     return;
-            // }
-            // 这里可以添加实际的保存逻辑
-                if (editId) {
-                    url = '/front/interface/edit/?interface_id=' + editId
-                } else {
-                    url = '/front/interface/add/'
-                }
-                $.ajax({
-                    url : url,
-                    type: "post",
-                    // data: JSON.stringify(valData),
-                    data: $("#add-interface-form").serialize(),
-                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                    dataType:"JSON",
-                    success:function (res) {
-                        if (res.success){
-                            alert('接口配置保存成功！');
-                            location.reload();
-                        }else{
-                            alert(JSON.stringify(res.error) || '保存失败，请重试！');
-                        }
+    function addInterfaceAsStep(interface,index) {
+    
+        // 这里可以将接口ID添加到测试用例的步骤列表中
+            const newRow = `
+                 <tr class="step-row" data-id="${interface.id}">
+                    <td>
+                        <input type="checkbox" class="step-checkbox" data-id="${index + 1}">
+                    </td>
+                    <td class="text-center step-index-cell">
+                        <span class="step-index">${index + 1}</span>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control input-sm"
+                               value="case_params"placeholder=${interface.name}>
+                        
+                    </td>
+                    <td>
+                        ${interface.url}
+                    </td>
+                    <td>${interface.method}</td>
+                    <td>
+                        ${interface.header}
+                    </td>
+                    <td>
+                        ${interface.body}
+                    </td>
+                
+                    <td width="180px">
+                        <textarea class="form-control" name="params" id="case_params" placeholder="请输入参数化变量，格式：var1=value1;var2=value2" rows=2></textarea>
+                    </td>
+                </tr>
+            `;
+            $("#stepTableBody").append(newRow)
+    }
+
+
+    // 保存接口配置
+    $('#save-testcase-btn').click(function(e) {
+        e.preventDefault();
+        // var valData = {
+        //     var_name: $('#new-val-name').val(),
+        //     var_value: $('#new-val-value').val(),
+        //     evn_id: $('#new-val-evn').val(),
+        //     type: $('#new-val-type').val()
+        // };
+        // 验证数据
+        // if (!valData.var_name || !valData.var_value || !valData.evn_id || !valData.type) {
+        //     alert('请填写完整的变量信息');
+        //     return;
+        // }
+        // 这里可以添加实际的保存逻辑
+            if (editId) {
+                url = '/front/interface/edit/?interface_id=' + editId
+            } else {
+                url = '/front/interface/add/'
+            }
+            $.ajax({
+                url : url,
+                type: "post",
+                // data: JSON.stringify(valData),
+                data: $("#add-interface-form").serialize(),
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                dataType:"JSON",
+                success:function (res) {
+                    if (res.success){
+                        alert('接口配置保存成功！');
+                        location.reload();
+                    }else{
+                        alert(JSON.stringify(res.error) || '保存失败，请重试！');
                     }
-                })
-             $('#addInterfaceModal').modal('hide');
-            editId = null; // 重置编辑ID
-        });
+                }
+            })
+            $('#addInterfaceModal').modal('hide');
+        editId = null; // 重置编辑ID
+    });
 
-        // 模态框关闭时重置表单
-        $('#addInterfaceModal').on('hidden.bs.modal', function() {
-            $('#add-interface-form')[0].reset();
-        });
-        $('#addTestcaseModal').on('hidden.bs.modal', function() {
-            $('#add-testcase-form')[0].reset();
-        });
+    // 模态框关闭时重置表单
+    $('#addInterfaceModal').on('hidden.bs.modal', function() {
+        $('#add-interface-form')[0].reset();
+    });
+    $('#addTestcaseModal').on('hidden.bs.modal', function() {
+        // $('#add-testcase-form')[0].reset();
+        $("#stepTableBody").empty();
+
     });
         //编辑环境对象
     function bindBtnEditEvent(evn_id){
@@ -531,7 +661,7 @@
                 });
             }
     document.addEventListener('DOMContentLoaded', function() {
-            const cells = document.querySelectorAll('.data-table td:not(:last-child)');
+            const cells = document.querySelectorAll('.data-table td,.interface-table td');
             cells.forEach(cell => {
                 if (cell.scrollWidth > cell.clientWidth) {
                     if (!cell.title) {
