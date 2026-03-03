@@ -45,9 +45,14 @@
         .interface-table td:nth-child(2) {
             width: 40px;
         }
-        .interface-table th:not(:first-child):not(:nth-child(2)),
-        .interface-table td:not(:first-child):not(:nth-child(2)) {
-            width: calc((100% - 40px) / 7); /* 总宽减去固定列，除以中间列数 */
+        /* ID列固定宽度 */
+        .interface-table th:nth-child(3),
+        .interface-table td:nth-child(3) {
+            width: 120px;
+        }
+        .interface-table th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)),
+        .interface-table td:not(:first-child):not(:nth-child(2)):not(:nth-child(3)) {
+            width: calc((100% - 160px) / 6); /* 总宽减去固定列，除以中间列数 */
         }
 
         /* ID列固定宽度 */
@@ -96,7 +101,7 @@
         }
 
         .interface-table td {
-            padding: 12px 15px;
+            padding: 12px 14px;
             border-bottom: 1px solid #e7eaec;
             vertical-align: middle;
         }
@@ -104,6 +109,92 @@
         .interface-table tbody tr:hover {
             background-color: #f9f9f9;
         }
+
+        /* 蓝色主题 */
+        .blue-theme .modal-headers {
+        background-color: #1890ff;
+        color: white;
+        border-bottom: none;
+        padding: 15px 20px;
+    }
+
+        .blue-theme .modal-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .blue-theme .close {
+            color: white;
+            opacity: 0.8;
+        }
+
+        .blue-theme .close:hover {
+            color: white;
+            opacity: 1;
+        }
+
+        .blue-theme .form-control:focus {
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .blue-theme .btn-primary {
+            background-color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .blue-theme .btn-primary:hover {
+            background-color: #096dd9;
+            border-color: #096dd9;
+        }
+
+         /* 步骤表格样式 */
+        .step-row {
+        cursor: move;
+        transition: background-color 0.2s;
+        }
+
+        .step-row.dragging {
+            opacity: 0.7;
+            background-color: #f0f7ff !important;
+            box-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+            z-index: 1000 !important;
+        }
+
+        /* 占位符样式 */
+        .step-placeholder-row {
+            height: 45px;
+            background-color: #e6f7ff;
+            border: 2px dashed #1890ff;
+            border-radius: 4px;
+        }
+
+        /* 拖拽手柄样式 */
+        .drag-handle {
+            cursor: move;
+            color: #999;
+            text-align: center;
+            width: 40px;
+        }
+
+        .drag-handle:hover {
+            color: #1890ff;
+        }
+
+        /* 步骤序号样式 */
+        .step-index {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            background-color: #1890ff;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
 
 
     </style>
@@ -114,277 +205,271 @@
 
 {% block body %}
 
-        <!-- 筛选区域 -->
-        <div class="filter-panel">
-            <div class="filter-row">
-                <div class="filter-item ">
-                    <div>
-                        <label for="variable-name">用例名称</label>
-                    </div>
-                    <div>
-                        <input id="variable-name" class="form-control input-sm">
-                    </div>
-                </div>
-                <div class="filter-item">
-                    <label for="project">所属项目</label>
-                    <input id="project-name" class="form-control input-sm">
-                </div>
-            </div>
-            <div class="filter-actions">
-                <button type="button" class="btn btn-default btn-sm btn-outline">
-                    <i class="fa fa-refresh"></i> 重置
-                </button>
-                <button type="button" class="btn btn-primary btn-sm">
-                    <i class="fa fa-search"></i> 查询
-                </button>
-            </div>
-        </div>
-
-        <!-- 数据主表格区域 -->
-        <div class="main-panel">
-        <!-- 操作按钮区域 -->
-        <div class="table-actions">
+<!-- 筛选区域 -->
+<div class="filter-panel">
+    <div class="filter-row">
+        <div class="filter-item ">
             <div>
-                <button type="button" class="btn btn-primary btn-sm" id="add-case-btn">
-                    <i class="fa fa-plus"></i> 新增用例
-                </button>
-                <button type="button" class="btn btn-default btn-sm btn-outline">
-                    <i class="fa fa-upload"></i> 批量导入
-                </button>
-                <button type="button" class="btn btn-default btn-sm btn-outline">
-                    <i class="fa fa-download"></i> 导出
-                </button>
+                <label for="variable-name">用例名称</label>
             </div>
             <div>
-                <button type="button" class="btn btn-default btn-sm btn-outline">
-                    <i class="fa fa-refresh"></i> 刷新
-                </button>
+                <input id="variable-name" class="form-control input-sm">
             </div>
         </div>
-
-        <!-- 表格数据区域 -->
-            <div class="table-container">
-            <table class="data-table">
-                <thead>
-                <tr>
-                    <th class="select-column">
-                        <input type="checkbox" id="select-all" class="select-checkbox">
-                    </th>
-                    <th>ID</th>
-                    <th >用例名称</th>
-                    <th >描述</th>
-                    <th>所属项目</th>
-                    <th>更新时间</th>
-                    <th>操作</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for var in case_querylist %}
-                    <tr>
-                        <td class="select-column">
-                            <input type="checkbox" class="select-checkbox case-select" data-id="{{ var.id }}">
-                        </td>
-                        <td>{{ var.id }}</td>
-                        <td>{{ var.case_name }}</td>
-                        <td>{{ var.description }}</td>
-                        <td>{{ var.project.prj_name }}</td>
-                        <td>{{ var.updated_at|date:"Y-n-j H:i:s" }}</td>
-                        <td>
-                            <div class="action-box">
-                               <div class="action-item">
-                                   <i class="fa fa-pencil action-icon"></i>
-                                   <button class="action-text" style="color: inherit; border: none;
-                                   outline: none;background: transparent;" onclick="bindBtnEditEvent({{ var.id }})">编辑</button>
-                               </div>
-                               <div class="action-item">
-                                   <i class="fa fa-copy action-icon"></i>
-                                   <button class="action-text" style="color: inherit; border: none;
-                                   outline: none;background: transparent;" onclick="bindBtnCopyEvent({{ var.id }})">复制</button>
-                               </div>
-
-                                <div class="action-item">
-                                    <i class="fa fa-trash action-icon"></i>
-                                    <a class="action-text" style="color: inherit;" href="/front/case/delete/{{ var.id }}/">删除</a>
-                                </div>
-                                <div class="action-item">
-                                    <i class="fa fa-start action-icon"></i>
-                                    <a class="action-text" style="color: inherit;" href="#">测试</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            </div>
-
-        <!-- 新增模态框 -->
-                    <div class="modal fade blue-theme " id="addTestcaseModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog custom-modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                    <h4 class="modal-title">添加测试用例</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <!-- 基本信息 -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label><span class="required">*</span> 用例名称</label>
-                                                <input type="text" class="form-control" id="case_name"
-                                                    placeholder="请输入测试用例名称">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label><span class="required">*</span> 所属项目</label>
-                                                <select class="form-control" id="projectSelect" name="prj_name" required>
-                                                    <option value="demo" disabled selected hidden>请选择所属项目</option>
-                                                    {% for prj in project_list %}
-                                                        <option value="{{ prj.id }}">{{ prj.prj_name }}</option>
-                                                    {% endfor %}        
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label>备注</label>
-                                                <textarea class="form-control" id="caseRemark" rows="2"
-                                                        placeholder="请输入备注信息"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 操作按钮 -->
-                                    <p class="text-center text-muted" style="margin-bottom: 10px;">
-                                            测试步骤（可拖拽行，调整执行顺序！）
-                                        </p>
-                                    <div class="text-left" style="margin: 20px 0;">
-                                        <button type="button" class="btn btn-primary" id="add-interface-btn">
-                                            <i class="fa fa-plus"></i> 添加接口
-                                        </button>
-                                        <button type="button" class="btn btn-danger" onclick="deleteSelectedSteps()">
-                                            <i class="fa fa-trash"></i> 删除
-                                        </button>
-                                    </div>
-
-                                    <!-- 测试步骤表格 -->
-                                    <div style="margin-top: 10px;">
-                                        <div class="table-responsive">
-                                            <div class="table-container" id="stepTable">
-                                            <table class="data-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th width="40px" class="select-column">
-                                                            <input type="checkbox" id="selectAllSteps">
-                                                        </th>
-                                                        <th >ID</th>
-                                                        <th >步骤名称</th>
-                                                        <th >测试地址</th>
-                                                        <th >接口类型</th>
-                                                        <th >请求头</th>
-                                                        <th >请求体</th>
-                                                        <th >参数化变量</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="stepTableBody">
-                                                    <!-- 步骤行将通过JavaScript动态生成 -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <div id="noStepsMessage" class="no-steps" style="display: none;">
-                                            <i class="fa fa-list-ul fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
-                                            <p>暂无测试步骤，请点击"添加接口"按钮添加步骤</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                                    <button type="button" class="btn btn-primary" id="save-testcase-btn">保存</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-        <!-- 接口选择模态框 -->
-                    <div class="modal fade blue-theme " id="addInterfaceModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog inter-modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                    <h4 class="modal-title">选择接口</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <!-- 搜索框 -->
-                                    <div class="search-box" style="position: relative;"> 
-                                        <input type="text" class="form-control" id="interfaceSearch" placeholder="搜索接口名称、路径或描述..." style="padding-right: 30px;"> 
-                                        <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #666; cursor: pointer;"> </i> 
-                                    </div>
-                                    <!-- 接口列表 -->
-                                <div class="table-responsive" style="margin-top: 10px;">
-                                    <div class="table-container">
-                                        <table class="interface-table" >
-                                            <thead>
-                                                 <tr>
-                                                    <th class="select-column">
-                                                            <input type="checkbox" id="interface_select-all" class="select-checkbox case-select interface-checkbox">
-                                                            </th>
-                                                    <th>ID</th>
-                                                    <th >接口名称</th>
-                                                    <th >测试对象</th>
-                                                    <th >测试地址</th>
-                                                    <th >接口类型</th>
-                                                    <th>请求头</th>
-                                                    <th >请求体</th>
-                                                    <th>所属项目</th>
-                                                    </tr>
-                                            </thead>
-                                            <tbody>
-                                                    {% for var in interface_querylist %}
-                                                    <tr>
-                                                        <td class="select-column">
-                                                            <input type="checkbox"  class="select-checkbox interface_case_select" data-id="{{ var.id }}"
-                                                            data-interface-name="{{ var.interface_name }}"
-                                                            data-test-object="{{ var.test_object }}"
-                                                            data-url="{{ var.url }}"
-                                                            data-method="{{ var.get_method_display }}"
-                                                            data-header="{{ var.header }}"
-                                                            data-body="{{ var.body }}"
-                                                            data-project="{{ var.project.prj_name }}">
-                                                        </td>
-                                                        <td>{{ var.id }}</td>
-                                                        <td>{{ var.interface_name }}</td>
-                                                        <td>{{ var.test_object }}</td>
-                                                        <td>{{ var.url }}</td>
-                                                        <td>{{ var.get_method_display }}</td>
-                                                        <td>{{ var.header }}</td>
-                                                        <td>{{ var.body }}</td>
-                                                        <td>{{ var.project.prj_name }}</td>
-                                                    </tr>
-                                                    {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                                    <button type="button" class="btn btn-primary" onclick="addSelectedInterfaces()">确定</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-        
+        <div class="filter-item">
+            <label for="project">所属项目</label>
+            <input id="project-name" class="form-control input-sm">
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button type="button" class="btn btn-default btn-sm btn-outline">
+            <i class="fa fa-refresh"></i> 重置
+        </button>
+        <button type="button" class="btn btn-primary btn-sm">
+            <i class="fa fa-search"></i> 查询
+        </button>
     </div>
 </div>
+
+<!-- 数据主表格区域 -->
+<div class="main-panel">
+<!-- 操作按钮区域 -->
+    <div class="table-actions">
+        <div>
+            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addTestcaseModal">
+                <i class="fa fa-plus"></i> 新增用例
+            </button>
+            <button type="button" class="btn btn-default btn-sm btn-outline">
+                <i class="fa fa-upload"></i> 批量导入
+            </button>
+            <button type="button" class="btn btn-default btn-sm btn-outline">
+                <i class="fa fa-download"></i> 导出
+            </button>
+        </div>
+        <div>
+            <button type="button" class="btn btn-default btn-sm btn-outline">
+                <i class="fa fa-refresh"></i> 刷新
+            </button>
+        </div>
+    </div>
+
+<!-- 表格数据区域 -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th class="select-column">
+                    <input type="checkbox" id="select-all" class="select-checkbox">
+                </th>
+                <th>ID</th>
+                <th >用例名称</th>
+                <th >描述</th>
+                <th>所属项目</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for var in case_querylist %}
+                <tr>
+                    <td class="select-column">
+                        <input type="checkbox" class="select-checkbox case-select" data-id="{{ var.id }}">
+                    </td>
+                    <td>{{ var.id }}</td>
+                    <td>{{ var.case_name }}</td>
+                    <td>{{ var.description }}</td>
+                    <td>{{ var.project.prj_name }}</td>
+                    <td>{{ var.updated_at|date:"Y-n-j H:i:s" }}</td>
+                    <td>
+                        <div class="action-box">
+                            <div class="action-item">
+                                <i class="fa fa-pencil action-icon"></i>
+                                <button class="action-text" style="color: inherit; border: none;
+                                outline: none;background: transparent;" onclick="bindBtnEditEvent({{ var.id }})">编辑</button>
+                            </div>
+                            <div class="action-item">
+                                <i class="fa fa-copy action-icon"></i>
+                                <button class="action-text" style="color: inherit; border: none;
+                                outline: none;background: transparent;" onclick="bindBtnCopyEvent({{ var.id }})">复制</button>
+                            </div>
+
+                            <div class="action-item">
+                                <i class="fa fa-trash action-icon"></i>
+                                <a class="action-text" style="color: inherit;" href="/front/case/delete/{{ var.id }}/">删除</a>
+                            </div>
+                            <div class="action-item">
+                                <i class="fa fa-start action-icon"></i>
+                                <a class="action-text" style="color: inherit;" href="#">测试</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+<!-- 新增用例模态框 -->
+    <div class="modal fade blue-theme " id="addTestcaseModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog custom-modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-headers">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">添加测试用例</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- 基本信息 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><span class="required">*</span> 用例名称</label>
+                                <input type="text" class="form-control" id="case_name"
+                                    placeholder="请输入测试用例名称">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><span class="required">*</span> 所属项目</label>
+                                <select class="form-control" id="projectSelect" name="prj_name" required>
+                                    <option value="demo" disabled selected hidden>请选择所属项目</option>
+                                    {% for prj in project_list %}
+                                        <option value="{{ prj.id }}">{{ prj.prj_name }}</option>
+                                    {% endfor %}        
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>备注</label>
+                                <textarea class="form-control" id="caseRemark" rows="2"
+                                        placeholder="请输入备注信息"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <p class="text-center text-muted" style="margin-bottom: 10px;">
+                            测试步骤（可拖拽行，调整执行顺序！）
+                        </p>
+                    <div class="text-left" style="margin: 20px 0;">
+                        <button type="button" class="btn btn-primary" id="add-interface-btn" data-toggle="modal" data-target="#addInterfaceModal">
+                            <i class="fa fa-plus"></i> 添加接口
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="deleteSelectedSteps()">
+                            <i class="fa fa-trash"></i> 删除
+                        </button>
+                    </div>
+                    <!-- 测试步骤表格 -->
+                    <div style="margin-top: 10px;">
+                        <div class="table-responsive">
+                            <div class="table-container" id="stepTable">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th width="40px" class="select-column">
+                                            <input type="checkbox" id="selectAllSteps">
+                                        </th>
+                                        <th >ID</th>
+                                        <th >步骤名称</th>
+                                        <th >测试地址</th>
+                                        <th >接口类型</th>
+                                        <th >请求头</th>
+                                        <th >请求体</th>
+                                        <th >参数化变量</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stepTableBody">
+                                    <!-- 步骤行将通过JavaScript动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="noStepsMessage" class="no-steps" style="display: none;">
+                            <i class="fa fa-list-ul fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
+                            <p>暂无测试步骤，请点击"添加接口"按钮添加步骤</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal"">取消</button>
+                    <button type="button" class="btn btn-primary" id="save-testcase-btn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- 接口选择模态框 -->
+    <div class="modal fade" id="addInterfaceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog inter-modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" id="close_interface_modal1" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">选择接口</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- 搜索框 -->
+                    <div class="search-box" style="position: relative;"> 
+                        <input type="text" class="form-control" id="interfaceSearch" placeholder="搜索接口名称、路径或描述..." style="padding-right: 30px;"> 
+                        <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #666; cursor: pointer;"> </i> 
+                    </div>
+                <!-- 接口列表 -->
+                <div class="table-responsive" style="margin-top: 10px;">
+                    <div class="table-container">
+                        <table class="interface-table" >
+                            <thead>
+                                    <tr>
+                                    <th class="select-column">
+                                            <input type="checkbox" id="interface_select-all" class="select-checkbox case-select interface-checkbox">
+                                            </th>
+                                    <th>ID</th>
+                                    <th >接口名称</th>
+                                    <th >测试对象</th>
+                                    <th >测试地址</th>
+                                    <th >接口类型</th>
+                                    <th>请求头</th>
+                                    <th >请求体</th>
+                                    <th>所属项目</th>
+                                    </tr>
+                            </thead>
+                            <tbody>
+                                    {% for var in interface_querylist %}
+                                    <tr>
+                                        <td class="select-column">
+                                            <input type="checkbox"  class="select-checkbox interface_case_select" data-id="{{ var.id }}"
+                                            data-interface-name="{{ var.interface_name }}"
+                                            data-test-object="{{ var.test_object }}"
+                                            data-url="{{ var.url }}"
+                                            data-method="{{ var.get_method_display }}"
+                                            data-header="{{ var.header }}"
+                                            data-body="{{ var.body }}"
+                                            data-project="{{ var.project.prj_name }}">
+                                        </td>
+                                        <td>{{ var.id }}</td>
+                                        <td>{{ var.interface_name }}</td>
+                                        <td>{{ var.test_object }}</td>
+                                        <td>{{ var.url }}</td>
+                                        <td>{{ var.get_method_display }}</td>
+                                        <td>{{ var.header }}</td>
+                                        <td>{{ var.body }}</td>
+                                        <td>{{ var.project.prj_name }}</td>
+                                    </tr>
+                                    {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="close_interface_modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addSelectedInterfaces()">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascript %}
@@ -408,13 +493,22 @@
         searchInterfaces($(this).val());
     });
 
-    // 新增弹出模太框 
-    $('#add-case-btn').click(function() {
-        $('#addTestcaseModal').modal('show');
+    $('#addInterfaceModal').on('hidden.bs.modal', function() {
+            // 检查是否还有模态框打开
+            var openModals = $('.modal-backdrop');
+            if (openModals.length > 0) {
+              // 还有其他模态框，必须保留 modal-open
+              $('body').addClass('modal-open');
+              console.log('其他模态框仍打开，保留 modal-open 类');
+            } else {
+                console.log('没有其他模态框，安全清理');
+              // 没有其他模态框，安全清理
+              $('body').removeClass('modal-open');
+              $('.modal-backdrop').remove();
+            }
     });
-    //接口选择弹出模太框
-    $('#add-interface-btn').click(function() {
-        $('#addInterfaceModal').modal('show');
+    $('#close_interface_modal,#close_interface_modal1').click(function() {
+        $('#addInterfaceModal').modal('hide');
     });
 
     function addSelectedInterfaces() {
@@ -437,8 +531,8 @@
             return;
         }
         // 这里可以将选中的接口ID发送到后端，或者直接在前端处理
-        selectinterfacellist.forEach((item, index) => {
-            addInterfaceAsStep(item,index);
+        selectinterfacellist.forEach((item) => {
+            addInterfaceAsStep(item);
         });
 
         // 清空选择
@@ -447,40 +541,77 @@
         $('#addInterfaceModal').modal('hide');
     }
 
-    function addInterfaceAsStep(interface,index) {
+    function addInterfaceAsStep(interface) {
     
         // 这里可以将接口ID添加到测试用例的步骤列表中
-            const newRow = `
-                 <tr class="step-row" data-id="${interface.id}">
-                    <td>
-                        <input type="checkbox" class="step-checkbox" data-id="${index + 1}">
-                    </td>
-                    <td class="text-center step-index-cell">
-                        <span class="step-index">${index + 1}</span>
-                    </td>
-                    <td>
-                        <input type="text" class="form-control input-sm"
-                               value="case_params"placeholder=${interface.name}>
-                        
-                    </td>
-                    <td>
-                        ${interface.url}
-                    </td>
-                    <td>${interface.method}</td>
-                    <td>
-                        ${interface.header}
-                    </td>
-                    <td>
-                        ${interface.body}
-                    </td>
-                
-                    <td width="180px">
-                        <textarea class="form-control" name="params" id="case_params" placeholder="请输入参数化变量，格式：var1=value1;var2=value2" rows=2></textarea>
-                    </td>
-                </tr>
-            `;
-            $("#stepTableBody").append(newRow)
+        const index = $("#stepTableBody tr").length + 1; // 获取当前步骤数量，作为新步骤的索引
+        const newRow = `
+                <tr class="step-row" data-id="${interface.id}">
+                <td>
+                    <input type="checkbox" class="step-checkbox" data-id="${index}">
+                </td>
+                <td class="text-center step-index-cell">
+                    <span class="step-index">${index}</span>
+                </td>
+                <td>
+                    <input type="text" class="form-control input-sm"
+                            value="${interface.name}" placeholder="请输入步骤名称">
+                    
+                </td>
+                <td>
+                    ${interface.url}
+                </td>
+                <td>${interface.method}</td>
+                <td>
+                    ${interface.header}
+                </td>
+                <td>
+                    ${interface.body}
+                </td>
+            
+                <td width="180px">
+                    <textarea class="form-control" name="params" id="case_params" placeholder="请输入参数化变量，格式：var1=value1;var2=value2" rows=2></textarea>
+                </td>
+            </tr>
+        `;
+        $("#stepTableBody").append(newRow)
+        // 重新初始化拖拽功能
+        initStepTableSortable();
     }
+
+
+    function deleteSelectedSteps() {
+        $('.step-checkbox:checked').each(function() {
+            $(this).closest('tr').remove();
+        });
+        // 更新步骤索引
+        $('#stepTableBody tr').each(function(index) {
+            $(this).find('.step-index').text(index + 1);
+        });
+    }
+
+    // 初始化步骤表格拖拽排序
+    function initStepTableSortable() {
+        $('#stepTableBody').sortable({
+            items: '.step-row',
+            placeholder: 'step-placeholder-row',
+            cursor: 'move',
+            opacity: 0.7,
+            tolerance: 'pointer',
+            start: function(e, ui) {
+                ui.helper.css('z-index', 1000);
+                ui.item.addClass('dragging');
+            },
+            stop: function(e, ui) {
+                ui.item.removeClass('dragging');
+                $('#stepTableBody tr').each(function(index) {
+                $(this).find('.step-index').text(index + 1);
+                });
+            }
+        }).disableSelection();
+    }
+
+
 
 
     // 保存接口配置
@@ -523,16 +654,12 @@
         editId = null; // 重置编辑ID
     });
 
-    // 模态框关闭时重置表单
-    $('#addInterfaceModal').on('hidden.bs.modal', function() {
-        $('#add-interface-form')[0].reset();
-    });
+
     $('#addTestcaseModal').on('hidden.bs.modal', function() {
-        // $('#add-testcase-form')[0].reset();
         $("#stepTableBody").empty();
 
     });
-        //编辑环境对象
+        //编辑测试用例
     function bindBtnEditEvent(evn_id){
                 editId = evn_id
                 $.ajax({
@@ -545,8 +672,6 @@
                                 $('#new-env-project option[value="' + res.data.project_id + '"]').prop('selected', true);
                                 $('#new-env-project option[value="test"]').remove();
                                 $('#new-env-description').val(res.data.description);
-                                console.log('测试对象配置：', res.data.test_object_config);
-                                console.log('数据库配置：', res.data.database_config);
                                 $.each(res.data.test_object_config, function(index, target) {
                                     var newItem = `
                                             <div class="test-target-item panel panel-default">
