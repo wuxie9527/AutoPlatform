@@ -183,3 +183,35 @@ def case_list(request):
         "project_list": project_list
     }
     return render(request, 'project/test_case.html', content)
+
+def case_add(request):
+    data = json.loads(request.body)
+    form = forms.testCaseModelForm(data)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "status": 200})
+    return JsonResponse({"success": False, "error": form.errors})
+
+def case_select(request,case_id):
+    querylist = models.test_case.objects.filter(id=case_id).first()
+    if not querylist:
+        return JsonResponse({"status": False, "error": "数据不存在"})
+    data = {
+        'case_name': querylist.case_name,
+        'project_id': querylist.project_id,
+        "project_name" :querylist.project.prj_name,
+        'description': querylist.description,
+        'steps': querylist.steps
+    }
+    return JsonResponse({"data": data, "status": 200})
+
+def case_edit(request):
+    case_id = request.GET.get("case_id")
+    row_object = models.test_case.objects.filter(id=case_id).first()
+    if not row_object:
+        return JsonResponse({"success": False, 'error': "数据错误"})
+    data = json.loads(request.body)
+    form = forms.testCaseModelForm(data, instance=row_object)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "status": 200})

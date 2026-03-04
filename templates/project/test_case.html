@@ -13,9 +13,9 @@
             overflow-x: auto;
             background: white;
         }
-        
+
         /* 固定宽度表格 */
-        .data-table {
+        .data-tables {
             width: 100%;
             table-layout: fixed; /* 关键：固定布局 */
             border-collapse: collapse;
@@ -28,7 +28,7 @@
             font-size: 14px;
         }
 
-        .data-table th {
+        .data-tables th {
             text-align: left;
             font-weight: 600;
             color: #333;
@@ -56,20 +56,21 @@
         }
 
         /* ID列固定宽度 */
-        .data-table th:nth-child(2),
-        .data-table td:nth-child(2) {
-            width: 40px;
+        .data-tables th:nth-child(2),
+        .data-tables td:nth-child(2) {
+            width: 60px;
         }
         /* 操作列固定宽度 */
-        .data-table th:last-child,
-        .data-table td:last-child {
-            width: 300px;
+        .data-tables th:last-child,
+        .data-tables td:last-child {
+            width: 400px;
         }
-        .data-table th:not(:first-child):not(:last-child):not(:nth-child(2)),
-        .data-table td:not(:first-child):not(:last-child):not(:nth-child(2)) {
-            width: calc((100% - 340px) / 4); /* 总宽减去固定列，除以中间列数 */
+        .data-tables th:not(:first-child):not(:last-child):not(:nth-child(2)),
+        .data-tables td:not(:first-child):not(:last-child):not(:nth-child(2)) {.
+            padding : 10px;
+            width: calc((100% - 460px) / 4); /* 总宽减去固定列，除以中间列数 */
         }
-        .data-table td:not(:last-child) {
+        .data-tables td:not(:last-child) {
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -180,20 +181,13 @@
         .drag-handle:hover {
             color: #1890ff;
         }
-
-        /* 步骤序号样式 */
-        .step-index {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            background-color: #1890ff;
-            color: white;
-            border-radius: 50%;
-            font-size: 12px;
-            font-weight: bold;
+        .action-text {
+            color: inherit;
+             border: none;
+             outline: none;
+             background: transparent;
         }
+
 
 
 
@@ -258,15 +252,16 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="select-column">
+                <th class="select-column" style="width: 150px;">
                     <input type="checkbox" id="select-all" class="select-checkbox">
                 </th>
-                <th>ID</th>
-                <th >用例名称</th>
-                <th >描述</th>
-                <th>所属项目</th>
-                <th>更新时间</th>
-                <th>操作</th>
+                <th style="width: 150px;">ID</th>
+                <th style="width: 300px;">用例名称</th>
+                <th style="width: 300px;">描述</th>
+                <th style="width: 200px;">所属项目</th>
+                <th style="width: 200px;">创建时间</th>
+                <th style="width: 200px;">更新时间</th>
+                <th style="width: 200px;">操作</th>
             </tr>
             </thead>
             <tbody>
@@ -279,27 +274,28 @@
                     <td>{{ var.case_name }}</td>
                     <td>{{ var.description }}</td>
                     <td>{{ var.project.prj_name }}</td>
+                    <td>{{ var.created_at|date:"Y-n-j H:i:s" }}</td>
                     <td>{{ var.updated_at|date:"Y-n-j H:i:s" }}</td>
                     <td>
                         <div class="action-box">
                             <div class="action-item">
                                 <i class="fa fa-pencil action-icon"></i>
-                                <button class="action-text" style="color: inherit; border: none;
-                                outline: none;background: transparent;" onclick="bindBtnEditEvent({{ var.id }})">编辑</button>
+                                <button class="action-text"
+                                 onclick="bindBtnEditEvent({{ var.id }})">编辑</button>
                             </div>
                             <div class="action-item">
                                 <i class="fa fa-copy action-icon"></i>
-                                <button class="action-text" style="color: inherit; border: none;
-                                outline: none;background: transparent;" onclick="bindBtnCopyEvent({{ var.id }})">复制</button>
+                                <button class="action-text" 
+                                 onclick="bindBtnCopyEvent({{ var.id }})">复制</button>
                             </div>
 
                             <div class="action-item">
                                 <i class="fa fa-trash action-icon"></i>
-                                <a class="action-text" style="color: inherit;" href="/front/case/delete/{{ var.id }}/">删除</a>
+                                <a class="action-text" href="/front/case/delete/{{ var.id }}/">删除</a>
                             </div>
                             <div class="action-item">
-                                <i class="fa fa-start action-icon"></i>
-                                <a class="action-text" style="color: inherit;" href="#">测试</a>
+                                <i class="fa fa-play action-icon"></i>
+                                <button class="action-text"  href="#" onclick="bindBtnTestEvent({{ var.id }})">测试</button>
                             </div>
                         </div>
                     </td>
@@ -314,7 +310,7 @@
         <div class="modal-dialog custom-modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-headers">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" id="close_testcase_modal1" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                     <h4 class="modal-title">添加测试用例</h4>
@@ -335,7 +331,7 @@
                                 <select class="form-control" id="projectSelect" name="prj_name" required>
                                     <option value="demo" disabled selected hidden>请选择所属项目</option>
                                     {% for prj in project_list %}
-                                        <option value="{{ prj.id }}">{{ prj.prj_name }}</option>
+                                        <option value="{{ prj.prj_id }}">{{ prj.prj_name }}</option>
                                     {% endfor %}        
                                 </select>
                             </div>
@@ -346,7 +342,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label>备注</label>
-                                <textarea class="form-control" id="caseRemark" rows="2"
+                                <textarea class="form-control" id="description" rows="2"
                                         placeholder="请输入备注信息"></textarea>
                             </div>
                         </div>
@@ -368,17 +364,17 @@
                     <div style="margin-top: 10px;">
                         <div class="table-responsive">
                             <div class="table-container" id="stepTable">
-                            <table class="data-table">
+                            <table class="data-tables">
                                 <thead>
                                     <tr>
-                                        <th width="40px" class="select-column">
+                                        <th style="width: 40px;">
                                             <input type="checkbox" id="selectAllSteps">
                                         </th>
                                         <th >ID</th>
                                         <th >步骤名称</th>
                                         <th >测试地址</th>
-                                        <th >接口类型</th>
-                                        <th >请求头</th>
+                                        <th style="width:100px">接口类型</th>
+                                        <th style="width:150px">请求头</th>
                                         <th >请求体</th>
                                         <th >参数化变量</th>
                                     </tr>
@@ -395,7 +391,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal"">取消</button>
+                    <button type="button" class="btn btn-default" id="close_testcase_modal">取消</button>
                     <button type="button" class="btn btn-primary" id="save-testcase-btn">保存</button>
                 </div>
             </div>
@@ -493,6 +489,8 @@
         searchInterfaces($(this).val());
     });
 
+
+
     $('#addInterfaceModal').on('hidden.bs.modal', function() {
             // 检查是否还有模态框打开
             var openModals = $('.modal-backdrop');
@@ -507,8 +505,19 @@
               $('.modal-backdrop').remove();
             }
     });
+    // 关闭接口选择模态框
     $('#close_interface_modal,#close_interface_modal1').click(function() {
         $('#addInterfaceModal').modal('hide');
+    });
+    //关闭新增用例模态框
+    $('#close_testcase_modal,#close_testcase_modal1').click(function() {
+        $('#addTestcaseModal').modal('hide');
+        $('#testcase_select').prop('checked', false);
+        $('#selectAllSteps').prop('checked', false);
+        $("#stepTableBody").empty();
+        $('#case_name').val('');
+        $('#description').val('');  
+        $('#projectSelect').val('demo'); // 重置项目选择框
     });
 
     function addSelectedInterfaces() {
@@ -522,9 +531,7 @@
                 body: $(this).data('body'),
                 method: $(this).data('method'),
                 project: $(this).data('project'),
-            });
-            console.log(selectinterfacellist);
-            
+            });            
         });
         if (selectinterfacellist.length === 0) {
             alert('请至少选择一个接口');
@@ -548,29 +555,30 @@
         const newRow = `
                 <tr class="step-row" data-id="${interface.id}">
                 <td>
-                    <input type="checkbox" class="step-checkbox" data-id="${index}">
+                    <input type="checkbox" class="step-checkbox" id="testcase_select" data-id="${index}">
                 </td>
-                <td class="text-center step-index-cell">
+                <td class="text-left step-index-cell">
                     <span class="step-index">${index}</span>
                 </td>
                 <td>
-                    <input type="text" class="form-control input-sm"
-                            value="${interface.name}" placeholder="请输入步骤名称">
+                    <textarea class="form-control" style="width: 300px;front-size: 14px;" name="step_name" rows=2>${interface.name}</textarea>
                     
                 </td>
-                <td>
+                <td class="step-url">
                     ${interface.url}
                 </td>
-                <td>${interface.method}</td>
-                <td>
+                <td class="step-method">
+                    ${interface.method}
+                </td>
+                <td class="step-header">
                     ${interface.header}
                 </td>
-                <td>
+                <td class="step-body" style="padding: 10px;">
                     ${interface.body}
                 </td>
             
                 <td width="180px">
-                    <textarea class="form-control" name="params" id="case_params" placeholder="请输入参数化变量，格式：var1=value1;var2=value2" rows=2></textarea>
+                    <textarea class="form-control"style="margin-top:5px;margin-bottom:5px;" name="params" id="case_params" placeholder="请输入参数化变量，格式：var1=value1;var2=value2" rows=2></textarea>
                 </td>
             </tr>
         `;
@@ -614,32 +622,46 @@
 
 
 
-    // 保存接口配置
+    // 保存用例
     $('#save-testcase-btn').click(function(e) {
         e.preventDefault();
-        // var valData = {
-        //     var_name: $('#new-val-name').val(),
-        //     var_value: $('#new-val-value').val(),
-        //     evn_id: $('#new-val-evn').val(),
-        //     type: $('#new-val-type').val()
-        // };
-        // 验证数据
-        // if (!valData.var_name || !valData.var_value || !valData.evn_id || !valData.type) {
-        //     alert('请填写完整的变量信息');
-        //     return;
-        // }
+        const testData = {
+            case_name: $('#case_name').val(),
+            project: $('#projectSelect').val(),
+            description: $('#description').val(),
+            steps: []
+        };
+        //验证数据
+        if (!testData.case_name || !testData.project) {
+            alert('请填写完整的用例信息');
+            return;
+        }
+        //搜集测试步骤数据
+        $('#stepTableBody tr').each(function() {
+            const step = {
+                interface_id: $(this).data('id'),
+                step_id: $(this).find('.step-index').text(),
+                name: $(this).find('textarea[name="step_name"]').val().trim(),
+                url: $(this).find('.step-url').text().trim(),
+                method: $(this).find('.step-method').text().trim(),
+                header: $(this).find('.step-header').text().trim(),
+                body: $(this).find('.step-body').text().trim(),
+                params: $(this).find('textarea[name="params"]').val()
+            };
+            testData.steps.push(step);
+        });
         // 这里可以添加实际的保存逻辑
             if (editId) {
-                url = '/front/interface/edit/?interface_id=' + editId
+                url = '/front/case/edit/?case_id=' + editId
             } else {
-                url = '/front/interface/add/'
+                url = '/front/case/add/'
             }
             $.ajax({
                 url : url,
                 type: "post",
-                // data: JSON.stringify(valData),
-                data: $("#add-interface-form").serialize(),
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                data: JSON.stringify(testData),
+                // data: $("#add-interface-form").serialize(),
+                contentType: "application/json; charset=UTF-8",
                 dataType:"JSON",
                 success:function (res) {
                     if (res.success){
@@ -650,151 +672,208 @@
                     }
                 }
             })
-            $('#addInterfaceModal').modal('hide');
+            $('#addTestcaseModal').modal('hide');
         editId = null; // 重置编辑ID
     });
 
-
-    $('#addTestcaseModal').on('hidden.bs.modal', function() {
-        $("#stepTableBody").empty();
-
-    });
         //编辑测试用例
     function bindBtnEditEvent(evn_id){
                 editId = evn_id
                 $.ajax({
-                    url : "/front/interface/select/"+evn_id+"/",
+                    url : "/front/case/select/"+evn_id+"/",
                     type: "GET",
                     dataType:"JSON",
                     success:function (res) {
                             if (res.status){
-                                $('#new-env-name').val(res.data.evn_name);
-                                $('#new-env-project option[value="' + res.data.project_id + '"]').prop('selected', true);
-                                $('#new-env-project option[value="test"]').remove();
-                                $('#new-env-description').val(res.data.description);
-                                $.each(res.data.test_object_config, function(index, target) {
-                                    var newItem = `
-                                            <div class="test-target-item panel panel-default">
-                                                <div class="panel-heading" style="display: flex; justify-content: space-between; align-items: center;">
-                                                    <h5 class="panel-title">测试对象 #${index+1}</h5>
-                                                    <button type="button" class="btn btn-xs btn-danger remove-test-target">
-                                                        <i class="fa fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="panel-body">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>对象名称</label>
-                                                                <input type="text" class="form-control test-target-name" name="evn_name" value="${target.name}" required>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>访问地址</label>
-                                                                <input type="text" class="form-control test-target-url" value="${target.url}" name="url" required>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>端口号</label>
-                                                                <input type="number" class="form-control test-target-port" value="${target.port}" name="port" min="1" max="65535">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>协议类型</label>
-                                                                <select class="form-control test-target-protocol ">
-                                                                    <option value="HTTP">HTTP</option>
-                                                                    <option value="MQTT">MQTT</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        `;
-                                    $('.test-targets-container').append(newItem);})
-                                $.each(res.data.database_config, function(index, db) {
-                                    var dbItem = `
-                                            <div class="database-config-item panel panel-default">
-                                                <div class="panel-heading">
-                                                    <h5 class="panel-title">数据库配置 #${index+1}</h5>
-                                                    <button type="button" class="btn btn-xs btn-danger remove-database-config">
-                                                        <i class="fa fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="panel-body">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>数据库类型</label>
-                                                                <select class="form-control database-type" required>
-                                                                    <option value="mysql">MySQL</option>
-                                                                    <option value="oracle">Oracle</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>数据库名称</label>
-                                                                <input type="text" class="form-control database-name" value="${db.name}" required>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>主机地址</label>
-                                                                <input type="text" class="form-control database-host" value="${db.host}" placeholder="如：localhost" required>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>端口号</label>
-                                                                <input type="number" class="form-control database-port" value="${db.port}" placeholder="如：3306" min="1" max="65535" required>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>用户名</label>
-                                                                <input type="text" class="form-control database-username" value="${db.username}" placeholder="数据库用户名" required>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>密码</label>
-                                                                <input type="password" class="form-control database-password" value="${db.password}" placeholder="数据库密码" required>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>`
-                                    $('.database-configs-container').append(dbItem);
-                                    $('.database-type').val(db.type);
-
-                                                })
-                            $("#addEnvModal").modal("show");
-                            }else {
-                                alert(res.error);
-                                }
-                    }
-                });
+                                $('#case_name').val(res.data.case_name);
+                                $('#projectSelect option[value="' + res.data.project_id + '"]').prop('selected', true);
+                                $('#description').val(res.data.description);
+                                $.each(res.data.steps, function(index, target) {
+                                    const newRow = `
+                                        <tr class="step-row" data-id="${target.id}">
+                                        <td>
+                                            <input type="checkbox" class="step-checkbox" id="testcase_select" data-id="${index+1}">
+                                        </td>
+                                        <td class="text-left step-index-cell">
+                                            <span class="step-index">${index+1}</span>
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control" style="width: 300px;front-size: 14px;" name="step_name" rows=2>${target.name}</textarea>
+                                            
+                                        </td>
+                                        <td class="step-url">
+                                            ${target.url}
+                                        </td>
+                                        <td class="step-method">
+                                            ${target.method}
+                                        </td>
+                                        <td class="step-header">
+                                            ${target.header}
+                                        </td>
+                                        <td class="step-body" style="padding: 10px;">
+                                            ${target.body}
+                                        </td>
+                                    
+                                        <td width="180px">
+                                            <textarea class="form-control"style="margin-top:5px;margin-bottom:5px;" name="params" id="case_params" rows=2>${target.params}</textarea>
+                                        </td>
+                                    </tr>
+                                `;
+                                $("#stepTableBody").append(newRow)
+                                // 重新初始化拖拽功能
+                                initStepTableSortable();
+                                $("#addTestcaseModal").modal("show");
+                            }   )
+                        }}
+                    })      
+                    
             }
-    document.addEventListener('DOMContentLoaded', function() {
-            const cells = document.querySelectorAll('.data-table td,.interface-table td');
-            cells.forEach(cell => {
-                if (cell.scrollWidth > cell.clientWidth) {
-                    if (!cell.title) {
-                        cell.title = cell.textContent;
+    
+
+
+
+    function setupTableOverflowSafe() {
+        const table = document.querySelector('#stepTableBody');
+        
+        if (!table) {
+            console.warn('Table with selector "#stepTableBody" not found.');
+            return null;
+        }
+        
+        // 检查是否已经有类似功能
+        if (table._overflowManager) {
+            console.warn('Table already has overflow manager.');
+            return table._overflowManager;
+        }
+        
+        let observer = null;
+        let resizeTimer = null;
+        
+        // 处理单个单元格
+        function processCell(cell) {
+            // 只在内容溢出且没有title时才设置
+            if (cell.scrollWidth > cell.clientWidth && !cell.title) {
+                const text = cell.textContent.trim();
+                if (text) {
+                    cell.title = text;
+                }
+            }
+        }
+        
+        // 批量处理单元格
+        function processCells() {
+            const cells = table.querySelectorAll('td');
+            cells.forEach(processCell);
+        }
+        
+        // 处理特定范围内的单元格
+        function processCellsInRange(startNode) {
+            if (startNode && startNode.querySelectorAll) {
+                const cells = startNode.querySelectorAll('td');
+                cells.forEach(processCell);
+            }
+        }
+        
+        // 初始处理
+        processCells();
+        
+        // 使用更精确的MutationObserver配置
+        try {
+            observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    if (mutation.type === 'childList') {
+                        // 只处理新增的节点
+                        for (const node of mutation.addedNodes) {
+                            if (node.nodeType === 1) { // 元素节点
+                                if (node.tagName === 'TR' || node.tagName === 'TD') {
+                                    // 使用setTimeout避免在mutation回调中立即处理
+                                    setTimeout(() => {
+                                        if (node.tagName === 'TR') {
+                                            processCellsInRange(node);
+                                        } else if (node.tagName === 'TD') {
+                                            processCell(node);
+                                        }
+                                    }, 0);
+                                } else if (node.querySelectorAll) {
+                                    // 如果添加的是包含表格的容器
+                                    const tds = node.querySelectorAll('td');
+                                    if (tds.length > 0) {
+                                        setTimeout(() => {
+                                            tds.forEach(processCell);
+                                        }, 0);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
+            
+            observer.observe(table, {
+                childList: true,
+                subtree: true
+            });
+            
+        } catch (error) {
+            console.warn('Failed to setup MutationObserver:', error);
+        }
+        
+        // 窗口大小变化处理
+        const handleResize = () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(processCells, 150);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        
+        // 创建管理器对象
+        const manager = {
+            refresh: processCells,
+            disconnect: () => {
+                if (observer) {
+                    observer.disconnect();
+                    observer = null;
+                }
+                if (resizeTimer) {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = null;
+                }
+                window.removeEventListener('resize', handleResize);
+                if (table._overflowManager) {
+                    delete table._overflowManager;
+                }
+            }
+        };
+        
+        // 保存引用
+        table._overflowManager = manager;
+        
+        return manager;
+    }
+    // 延迟初始化，避免影响页面加载
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            // 延迟执行，确保其他脚本先执行
+            setTimeout(() => {
+                const manager = setupTableOverflowSafe();
+                if (manager) {
+                    window.stepTableOverflowManager = manager;
+                }
+            }, 100);
         });
+    } else {
+        setTimeout(() => {
+            const manager = setupTableOverflowSafe();
+            if (manager) {
+                window.stepTableOverflowManager = manager;
+            }
+        }, 100);
+    }
+    
+
+    
+
+
     </script>
 
 {% endblock %}

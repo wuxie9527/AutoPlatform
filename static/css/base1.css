@@ -189,6 +189,9 @@
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .data-table thead {
