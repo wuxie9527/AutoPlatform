@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>测试报告</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (展开详情)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (隐藏详情)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++)
+        filterItems[i].hidden = false;
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">显示详情</a> / ' +
+                            '<a href="javascript:hideAllExtras()">隐藏详情</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+    // 修改用例报告显示的用例名称 add by hex炜
+    var case_name_td = document.getElementsByClassName("col-name")
+    for(var i = 0; i < case_name_td.length; i++)
+        try{
+            case_name_td[i].innerText = case_name_td[i].innerText.split("\[")[1].split("\]")[0];
+        }
+        catch(err){
+            // 如果表格中没有[]会抛异常，如果抛异常我就显示null，如果你想显示别的东西自己改吧，因为通常只要我们使用参数化就有[]显示
+            case_name_td[i].innerText = "null";
+        }
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>AutoTest.html</h1>
+    <p>生成报告时间：2022-08-06 -- 17:21:15</p>
+    <h2>测试环境</h2>
+    <table id="environment">
+      <tr>
+        <td>BUILD_ID</td>
+        <td>13</td></tr>
+      <tr>
+        <td>BUILD_NUMBER</td>
+        <td>13</td></tr>
+      <tr>
+        <td>BUILD_TAG</td>
+        <td>jenkins-AutoRun-13</td></tr>
+      <tr>
+        <td>EXECUTOR_NUMBER</td>
+        <td>1</td></tr>
+      <tr>
+        <td>JOB_NAME</td>
+        <td>AutoRun</td></tr>
+      <tr>
+        <td>NODE_NAME</td>
+        <td>master</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>Darwin-17.7.0-x86_64-i386-64bit</td></tr>
+      <tr>
+        <td>WORKSPACE</td>
+        <td>/var/root/.jenkins/workspace/AutoRun</td></tr>
+      <tr>
+        <td>接口地址</td>
+        <td><a href="http://yapi.dearlovertech.com/group/19" target="_blank">http://yapi.dearlovertech.com/group/19</a></td></tr>
+      <tr>
+        <td>测试环境</td>
+        <td><a href="http://localdev.xytask.uheixia.com" target="_blank">http://localdev.xytask.uheixia.com</a></td></tr>
+      <tr>
+        <td>项目名称</td>
+        <td>NSY_接口自动化</td></tr></table>
+    <h2>用例统计</h2>
+    <p>所属部门: NSY测试部</p>
+    <p>开发维护人员: 何星炜</p>
+    <p>执行了29个测试用例, 历时:66.89秒 . </p>
+    <p class="filter" hidden="true">(取消)勾选复选框, 以便筛选测试结果</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">29 通过</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 跳过</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">0 失败</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 错误</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 预期失败</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 预期通过</span>
+    <h2>测试结果</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">通过/失败</th>
+          <th class="sortable" col="name">用例</th>
+          <th class="sortable numeric" col="duration">耗时</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="3">无测试结果, 试着选择其他测试结果条件</th></tr></thead>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：登陆；---用例描述：登陆]</td>
+          <td class="col-duration">0.34</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：登陆的setp1，登陆
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;登陆&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;登陆&#x27;, &#x27;参数&#x27;: &#x27;loginName=$getMoble,icode=0000,deviceId=$createRandomString,channelId=$channelId,appPackage=$appPackage,appVersion=$appVersion&#x27;, &#x27;接口名称&#x27;: &#x27;login&#x27;, &#x27;测试对象&#x27;: &#x27;xyUid&#x27;, &#x27;接口检查&#x27;: &#x27;msg=登录成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;token,userId,loginName,deviceId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;msg&#x27;: &#x27;登录成功&#x27;}
+期望值:msg=登录成功
+效验通过，期望值：登录成功=实际值:登录成功
+数据输出完成，已将：{&#x27;loginName&#x27;: &#x27;13809234441&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;userId&#x27;: &#x27;30718&#x27;, &#x27;token&#x27;: &#x27;f11e0e37d4044f8d959344aaf0a2e000&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;loginName&#x27;: &#x27;13809234441&#x27;, &#x27;userId&#x27;: &#x27;30718&#x27;, &#x27;token&#x27;: &#x27;f11e0e37d4044f8d959344aaf0a2e000&#x27;}
+=================================================================
+开始执行测试用例：登陆的setp2，初始化金币
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;登陆&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;初始化金币&#x27;, &#x27;参数&#x27;: &#x27;userId=$userId,deviceId=$deviceId,channelId=$channelId,appVersion=$appVersion,appPackage=$appPackage&#x27;, &#x27;接口名称&#x27;: &#x27;initUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;SELECT amount FROM hl_cash_amount_order WHERE `user_id` = $userId|0.9&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据库对象创建成功
+数据库校验通过:result = true
+=================================================================
+开始执行测试用例：登陆的setp3，初始化
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;登陆&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;初始化&#x27;, &#x27;参数&#x27;: &#x27;userId=$userId,deviceId=$deviceId,channelId=$channelId,appVersion=$appVersion,appPackage=$appPackage&#x27;, &#x27;接口名称&#x27;: &#x27;getActivityDoorInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;UPDATE hl_user_gold  set total_gold = total_gold + 10000 where user_id = $userId|1&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据库别名已在配置当中，直接返回
+开始执行sql：UPDATE hl_user_gold  set total_gold = total_gold + 10000 where user_id = 30718
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：历史金币兑换；---用例描述：兑换]</td>
+          <td class="col-duration">0.05</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：历史金币兑换的setp1，兑换
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;历史金币兑换&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;兑换&#x27;, &#x27;参数&#x27;: &#x27;userId=$userId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;exchangeGoldToMoney&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &quot;SELECT reward_number FROM hl_user_gold_log WHERE `user_id` = &#x27;30662&#x27; and name = &#x27;兑换现金&#x27;|1&quot;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据库对象创建成功
+数据库校验通过:result = true
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：领取新人红包；---用例描述：领取任务]</td>
+          <td class="col-duration">2.13</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：领取新人红包的setp1，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;领取新人红包&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=6,taskDetailId=19,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=52&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;52&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=52
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：52=实际值:52
+=================================================================
+开始执行测试用例：领取新人红包的setp2，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;领取新人红包&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;totalGold=0,totalMoney=53.00&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;totalGold&#x27;: 0, &#x27;totalMoney&#x27;: &#x27;53.00&#x27;}
+期望值:totalGold=0,totalMoney=53.00
+效验通过，期望值：0=实际值:0
+效验通过，期望值：53.00=实际值:53.00
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：完成登陆领取200金币；---用例描述：成功领取]</td>
+          <td class="col-duration">2.47</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：完成登陆领取200金币的setp1，成功领取
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成登陆领取200金币&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;成功领取&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;totalGold=0,操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;totalGold&#x27;: 0}
+期望值:totalGold=0,操作成功
+效验通过，期望值：0=实际值:0
+校验通过，期望值：操作成功在返回值中
+=================================================================
+开始执行测试用例：完成登陆领取200金币的setp2，查询新手任务信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成登陆领取200金币&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;查询新手任务信息&#x27;, &#x27;参数&#x27;: &#x27;appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage&#x27;, &#x27;接口名称&#x27;: &#x27;getNewUserConfigInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;登录账号,绑定微信&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{}
+期望值:登录账号,绑定微信
+校验通过，期望值：登录账号在返回值中
+校验通过，期望值：绑定微信在返回值中
+=================================================================
+开始执行测试用例：完成登陆领取200金币的setp3，完成任务登陆
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成登陆领取200金币&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;完成任务登陆&#x27;, &#x27;参数&#x27;: &#x27;taskId=8,taskDetailId=21,userId=$userId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+=================================================================
+开始执行测试用例：完成登陆领取200金币的setp4，领取登陆金币
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成登陆领取200金币&#x27;, &#x27;测试步骤&#x27;: &#x27;setp4&#x27;, &#x27;描述&#x27;: &#x27;领取登陆金币&#x27;, &#x27;参数&#x27;: &#x27;taskId=8,taskDetailId=21,userId=$userId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200&#x27;, &#x27;数据库检查&#x27;: &#x27;select total_gold from hl_user_gold where user_id = $userId|200&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200}
+期望值:code=200
+效验通过，期望值：200=实际值:200
+数据库对象创建成功
+---------------------------------------
+sql:select total_gold from hl_user_gold where user_id = 30718
+期望值:200
+实际值:200
+数据库校验通过:result = true
+=================================================================
+开始执行测试用例：完成登陆领取200金币的setp5，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成登陆领取200金币&#x27;, &#x27;测试步骤&#x27;: &#x27;setp5&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;totalGold=200,操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;totalGold&#x27;: 200}
+期望值:totalGold=200,操作成功
+效验通过，期望值：200=实际值:200
+校验通过，期望值：操作成功在返回值中
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：完成第一天签到任务；---用例描述：成功领取166金币]</td>
+          <td class="col-duration">4.57</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：完成第一天签到任务的setp1，成功领取166金币
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成第一天签到任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;成功领取166金币&#x27;, &#x27;参数&#x27;: &#x27;userId=$userId,deviceId=$deviceId,channelId=$channelId,appVersion=$appVersion,appPackage=$appPackage&#x27;, &#x27;接口名称&#x27;: &#x27;getSignConfigInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,签到任务&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,签到任务
+效验通过，期望值：操作成功=实际值:操作成功
+校验通过，期望值：签到任务在返回值中
+=================================================================
+开始执行测试用例：完成第一天签到任务的setp2，完成签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成第一天签到任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;完成签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=1,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;1&#x27;, &#x27;taskDetailId&#x27;: &#x27;1&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;1&#x27;, &#x27;taskDetailId&#x27;: &#x27;1&#x27;}
+=================================================================
+开始执行测试用例：完成第一天签到任务的setp3，领取收索任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成第一天签到任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;领取收索任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200}
+期望值:code=200
+效验通过，期望值：200=实际值:200
+=================================================================
+开始执行测试用例：完成第一天签到任务的setp4，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;完成第一天签到任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp4&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;totalGold=366,操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;totalGold&#x27;: 366}
+期望值:totalGold=366,操作成功
+效验通过，期望值：366=实际值:366
+校验通过，期望值：操作成功在返回值中
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第二天任务失败；---用例描述：重复领取]</td>
+          <td class="col-duration">2.40</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第二天任务失败的setp1，重复领取
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第二天任务失败&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;重复领取&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=2,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;1&#x27;, &#x27;taskDetailId&#x27;: &#x27;2&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;1&#x27;, &#x27;taskDetailId&#x27;: &#x27;2&#x27;}
+=================================================================
+开始执行测试用例：签到第二天任务失败的setp2，领取签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第二天任务失败&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=奖励已领取，不能重复领取&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;奖励已领取，不能重复领取&#x27;}
+期望值:message=奖励已领取，不能重复领取
+效验通过，期望值：奖励已领取，不能重复领取=实际值:奖励已领取，不能重复领取
+=================================================================
+开始执行测试用例：签到第二天任务失败的setp3，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第二天任务失败&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;totalGold=366,操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;DELETE  from hl_user_gold_log where task_id = 1 and user_id = $userId|1&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{&#x27;totalGold&#x27;: 366}
+期望值:totalGold=366,操作成功
+效验通过，期望值：366=实际值:366
+校验通过，期望值：操作成功在返回值中
+数据库对象创建成功
+开始执行sql：DELETE  from hl_user_gold_log where task_id = 1 and user_id = 30718
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：活跃度40%抽奖；---用例描述：完成任务抽奖]</td>
+          <td class="col-duration">4.14</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：活跃度40%抽奖的setp1，完成任务抽奖
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度40%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成任务抽奖&#x27;, &#x27;参数&#x27;: &#x27;taskId=19,taskDetailId=33,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;33&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;33&#x27;}
+=================================================================
+开始执行测试用例：活跃度40%抽奖的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度40%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200}
+期望值:code=200
+效验通过，期望值：200=实际值:200
+=================================================================
+开始执行测试用例：活跃度40%抽奖的setp3，抽奖
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度40%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;抽奖&#x27;, &#x27;参数&#x27;: &#x27;ip=127.0.0.1,taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userLotteryDraw&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:code=200,message=操作成功
+效验通过，期望值：200=实际值:200
+效验通过，期望值：操作成功=实际值:操作成功
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：活跃度60%抽奖；---用例描述：完成任务领取266金币]</td>
+          <td class="col-duration">2.11</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：活跃度60%抽奖的setp1，完成任务领取266金币
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度60%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成任务领取266金币&#x27;, &#x27;参数&#x27;: &#x27;taskId=19,taskDetailId=34,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;34&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;34&#x27;}
+=================================================================
+开始执行测试用例：活跃度60%抽奖的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度60%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=266&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;266&#x27;}
+期望值:code=200,rewardNumber=266
+效验通过，期望值：200=实际值:200
+效验通过，期望值：266=实际值:266
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第二天任务成功；---用例描述：领取第二天签到任务]</td>
+          <td class="col-duration">2.10</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第二天任务成功的setp1，领取第二天签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第二天任务成功&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取第二天签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=2,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=266&#x27;, &#x27;数据库检查&#x27;: &#x27;delete  from hl_user_gold_log where task_id = 1 and user_id = $userId|1&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;266&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=266
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：266=实际值:266
+数据库对象创建成功
+开始执行sql：delete  from hl_user_gold_log where task_id = 1 and user_id = 30718
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第三天任务成功；---用例描述：领取第三天签到任务]</td>
+          <td class="col-duration">3.85</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第三天任务成功的setp1，领取第三天签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第三天任务成功&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取第三天签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=3,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=266&#x27;, &#x27;数据库检查&#x27;: &#x27;delete  from hl_user_gold_log where task_id = 1 and user_id = $userId|1&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;266&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=266
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：266=实际值:266
+数据库对象创建成功
+开始执行sql：delete  from hl_user_gold_log where task_id = 1 and user_id = 30718
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第四天任务成功；---用例描述：领取第四天签到任务]</td>
+          <td class="col-duration">2.11</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第四天任务成功的setp1，领取第四天签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第四天任务成功&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取第四天签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=4,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=266&#x27;, &#x27;数据库检查&#x27;: &#x27;delete  from hl_user_gold_log where task_id = 1 and user_id = $userId|1&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;266&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=266
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：266=实际值:266
+数据库对象创建成功
+开始执行sql：delete  from hl_user_gold_log where task_id = 1 and user_id = 30718
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第五天任务成功；---用例描述：领取第五天签到任务]</td>
+          <td class="col-duration">2.12</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第五天任务成功的setp1，领取第五天签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第五天任务成功&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取第五天签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=5,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=266&#x27;, &#x27;数据库检查&#x27;: &#x27;delete  from hl_user_gold_log where task_id = 1 and user_id = $userId|1&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;266&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=266
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：266=实际值:266
+数据库对象创建成功
+开始执行sql：delete  from hl_user_gold_log where task_id = 1 and user_id = 30718
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第六天任务成功；---用例描述：领取第六天签到任务]</td>
+          <td class="col-duration">2.15</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第六天任务成功的setp1，领取第六天签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第六天任务成功&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取第六天签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=6,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=266&#x27;, &#x27;数据库检查&#x27;: &#x27;delete  from hl_user_gold_log where task_id = 1 and user_id = $userId|1\nselect total_gold from hl_user_gold where user_id = $userId|2062&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;266&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=266
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：266=实际值:266
+数据库对象创建成功
+开始执行sql：delete  from hl_user_gold_log where task_id = 1 and user_id = 30718
+数据库别名已在配置当中，直接返回
+---------------------------------------
+sql:select total_gold from hl_user_gold where user_id = 30718
+期望值:2062
+实际值:2062
+数据库校验通过:result = true
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：签到第七天任务成功；---用例描述：领取第七天签到任务]</td>
+          <td class="col-duration">2.07</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：签到第七天任务成功的setp1，领取第七天签到任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;签到第七天任务成功&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;领取第七天签到任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=1,taskDetailId=7,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功,rewardNumber=566&#x27;, &#x27;数据库检查&#x27;: &#x27;select total_gold from hl_user_gold where user_id = $userId|2628&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;rewardNumber&#x27;: &#x27;566&#x27;, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功,rewardNumber=566
+效验通过，期望值：操作成功=实际值:操作成功
+效验通过，期望值：566=实际值:566
+数据库对象创建成功
+---------------------------------------
+sql:select total_gold from hl_user_gold where user_id = 30718
+期望值:2628
+实际值:2628
+数据库校验通过:result = true
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：看视屏两分钟；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">2.13</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：看视屏两分钟的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏两分钟&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=2,taskDetailId=8,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;8&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;8&#x27;}
+=================================================================
+开始执行测试用例：看视屏两分钟的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏两分钟&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=5000&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;5000&#x27;}
+期望值:code=200,rewardNumber=5000
+效验通过，期望值：200=实际值:200
+效验通过，期望值：5000=实际值:5000
+=================================================================
+开始执行测试用例：看视屏两分钟的setp3，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏两分钟&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{}
+期望值:操作成功
+校验通过，期望值：操作成功在返回值中
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：活跃度20%抽奖；---用例描述：完成任务领取66金币]</td>
+          <td class="col-duration">2.08</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：活跃度20%抽奖的setp1，完成任务领取66金币
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度20%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成任务领取66金币&#x27;, &#x27;参数&#x27;: &#x27;taskId=19,taskDetailId=32,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;32&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;32&#x27;}
+=================================================================
+开始执行测试用例：活跃度20%抽奖的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度20%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=66&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;66&#x27;}
+期望值:code=200,rewardNumber=66
+效验通过，期望值：200=实际值:200
+效验通过，期望值：66=实际值:66
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：每日搜索任务；---用例描述：第一次]</td>
+          <td class="col-duration">3.38</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：每日搜索任务的setp1，第一次
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;第一次&#x27;, &#x27;参数&#x27;: &#x27;taskId=4,taskDetailId=17,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;17&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;17&#x27;}
+=================================================================
+开始执行测试用例：每日搜索任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=100&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;100&#x27;}
+期望值:code=200,rewardNumber=100
+效验通过，期望值：200=实际值:200
+效验通过，期望值：100=实际值:100
+=================================================================
+开始执行测试用例：每日搜索任务的setp3，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{}
+期望值:操作成功
+校验通过，期望值：操作成功在返回值中
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：每日搜索任务；---用例描述：第二次]</td>
+          <td class="col-duration">3.78</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：每日搜索任务的setp1，第二次
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;第二次&#x27;, &#x27;参数&#x27;: &#x27;taskId=4,taskDetailId=37,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;37&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;37&#x27;}
+=================================================================
+开始执行测试用例：每日搜索任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=100&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;100&#x27;}
+期望值:code=200,rewardNumber=100
+效验通过，期望值：200=实际值:200
+效验通过，期望值：100=实际值:100
+=================================================================
+开始执行测试用例：每日搜索任务的setp3，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{}
+期望值:操作成功
+校验通过，期望值：操作成功在返回值中
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：每日搜索任务；---用例描述：第三次]</td>
+          <td class="col-duration">2.14</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：每日搜索任务的setp1，第三次
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;第三次&#x27;, &#x27;参数&#x27;: &#x27;taskId=4,taskDetailId=38,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;38&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;38&#x27;}
+=================================================================
+开始执行测试用例：每日搜索任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=100&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;100&#x27;}
+期望值:code=200,rewardNumber=100
+效验通过，期望值：200=实际值:200
+效验通过，期望值：100=实际值:100
+=================================================================
+开始执行测试用例：每日搜索任务的setp3，查询金币信息
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;查询金币信息&#x27;, &#x27;参数&#x27;: &#x27;phone=$loginName,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;getUserGoldInfo&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+接口实际返回值：{}
+期望值:操作成功
+校验通过，期望值：操作成功在返回值中
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：每日搜索任务；---用例描述：第三次重复领取]</td>
+          <td class="col-duration">0.04</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：每日搜索任务的setp1，第三次重复领取
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;每日搜索任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;第三次重复领取&#x27;, &#x27;参数&#x27;: &#x27;taskId=4,taskDetailId=38,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;重复插入&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{}
+期望值:重复插入
+校验通过，期望值：重复插入在返回值中
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;38&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;4&#x27;, &#x27;taskDetailId&#x27;: &#x27;38&#x27;}
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：看视屏10分钟任务；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">2.09</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：看视屏10分钟任务的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏10分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=2,taskDetailId=9,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;9&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;9&#x27;}
+=================================================================
+开始执行测试用例：看视屏10分钟任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏10分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=328&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;328&#x27;}
+期望值:code=200,rewardNumber=328
+效验通过，期望值：200=实际值:200
+效验通过，期望值：328=实际值:328
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：活跃度80%抽奖；---用例描述：完成任务抽奖]</td>
+          <td class="col-duration">4.14</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：活跃度80%抽奖的setp1，完成任务抽奖
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度80%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成任务抽奖&#x27;, &#x27;参数&#x27;: &#x27;taskId=19,taskDetailId=35,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;35&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;35&#x27;}
+=================================================================
+开始执行测试用例：活跃度80%抽奖的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度80%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200}
+期望值:code=200
+效验通过，期望值：200=实际值:200
+=================================================================
+开始执行测试用例：活跃度80%抽奖的setp3，抽奖
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度80%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp3&#x27;, &#x27;描述&#x27;: &#x27;抽奖&#x27;, &#x27;参数&#x27;: &#x27;ip=127.0.0.1,taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userLotteryDraw&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:code=200,message=操作成功
+效验通过，期望值：200=实际值:200
+效验通过，期望值：操作成功=实际值:操作成功
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：看视屏20分钟任务；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">3.20</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：看视屏20分钟任务的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏20分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=2,taskDetailId=10,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;10&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;10&#x27;}
+=================================================================
+开始执行测试用例：看视屏20分钟任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏20分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=3000&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;3000&#x27;}
+期望值:code=200,rewardNumber=3000
+效验通过，期望值：200=实际值:200
+效验通过，期望值：3000=实际值:3000
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：看视屏30分钟任务；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">2.32</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：看视屏30分钟任务的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏30分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=2,taskDetailId=11,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;11&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;11&#x27;}
+=================================================================
+开始执行测试用例：看视屏30分钟任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏30分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=188&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;188&#x27;}
+期望值:code=200,rewardNumber=188
+效验通过，期望值：200=实际值:200
+效验通过，期望值：188=实际值:188
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：看视屏150分钟任务；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">2.07</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：看视屏150分钟任务的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏150分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=2,taskDetailId=12,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;12&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;2&#x27;, &#x27;taskDetailId&#x27;: &#x27;12&#x27;}
+=================================================================
+开始执行测试用例：看视屏150分钟任务的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看视屏150分钟任务&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=8000&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;8000&#x27;}
+期望值:code=200,rewardNumber=8000
+效验通过，期望值：200=实际值:200
+效验通过，期望值：8000=实际值:8000
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：活跃度100%抽奖；---用例描述：完成任务领取500金币]</td>
+          <td class="col-duration">2.09</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：活跃度100%抽奖的setp1，完成任务领取500金币
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度100%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成任务领取500金币&#x27;, &#x27;参数&#x27;: &#x27;taskId=19,taskDetailId=36,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;36&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;19&#x27;, &#x27;taskDetailId&#x27;: &#x27;36&#x27;}
+=================================================================
+开始执行测试用例：活跃度100%抽奖的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;活跃度100%抽奖&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200}
+期望值:code=200
+效验通过，期望值：200=实际值:200
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：绑定微信；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">2.10</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：绑定微信的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;绑定微信&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=9,taskDetailId=22,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;9&#x27;, &#x27;taskDetailId&#x27;: &#x27;22&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;9&#x27;, &#x27;taskDetailId&#x27;: &#x27;22&#x27;}
+=================================================================
+开始执行测试用例：绑定微信的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;绑定微信&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=500&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;500&#x27;}
+期望值:code=200,rewardNumber=500
+效验通过，期望值：200=实际值:200
+效验通过，期望值：500=实际值:500
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：看激励视屏；---用例描述：完成看视频任务]</td>
+          <td class="col-duration">2.08</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：看激励视屏的setp1，完成看视频任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看激励视屏&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;完成看视频任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=18,taskDetailId=31,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;saveTaskFinishCount&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=操作成功&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;taskId,taskDetailId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;操作成功&#x27;}
+期望值:message=操作成功
+效验通过，期望值：操作成功=实际值:操作成功
+数据输出完成，已将：{&#x27;taskId&#x27;: &#x27;18&#x27;, &#x27;taskDetailId&#x27;: &#x27;31&#x27;}添加到全局变量中
+全局变量内数据{&#x27;channelId&#x27;: &#x27;hlsp_yingyongbao&#x27;, &#x27;appVersion&#x27;: &#x27;3.7.1&#x27;, &#x27;appPackage&#x27;: &#x27;com.zl.hlvideo&#x27;, &#x27;deviceId&#x27;: &#x27;sdSSx9e7UL&#x27;, &#x27;taskId&#x27;: &#x27;18&#x27;, &#x27;taskDetailId&#x27;: &#x27;31&#x27;}
+=================================================================
+开始执行测试用例：看激励视屏的setp2，领取任务
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;看激励视屏&#x27;, &#x27;测试步骤&#x27;: &#x27;setp2&#x27;, &#x27;描述&#x27;: &#x27;领取任务&#x27;, &#x27;参数&#x27;: &#x27;taskId=$taskId,taskDetailId=$taskDetailId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;userGetGold&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;code=200,rewardNumber=300&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;code&#x27;: 200, &#x27;rewardNumber&#x27;: &#x27;300&#x27;}
+期望值:code=200,rewardNumber=300
+效验通过，期望值：200=实际值:200
+效验通过，期望值：300=实际值:300
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcase/test_start.py::TestLogin::test_login[测试用例名称：历史金币兑换失败；---用例描述：兑换余额不足]</td>
+          <td class="col-duration">0.02</td></tr>
+        <tr>
+          <td class="extra" colspan="3">
+            <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
+开始执行测试用例：历史金币兑换失败的setp1，兑换余额不足
+测试步骤信息：{&#x27;用例名称&#x27;: &#x27;历史金币兑换失败&#x27;, &#x27;测试步骤&#x27;: &#x27;setp1&#x27;, &#x27;描述&#x27;: &#x27;兑换余额不足&#x27;, &#x27;参数&#x27;: &#x27;userId=$userId,appVersion=$appVersion,userId=$userId,channelId=$channelId,appPackage=$appPackage,deviceId=$deviceId&#x27;, &#x27;接口名称&#x27;: &#x27;exchangeGoldToMoney&#x27;, &#x27;测试对象&#x27;: &#x27;xyTask&#x27;, &#x27;接口检查&#x27;: &#x27;message=无可兑换金币，请检查！&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headerSP&#x27;, &#x27;调试&#x27;: &#x27;&#x27;}
+开始签名
+接口实际返回值：{&#x27;message&#x27;: &#x27;无可兑换金币，请检查！&#x27;}
+期望值:message=无可兑换金币，请检查！
+效验通过，期望值：无可兑换金币，请检查！=实际值:无可兑换金币，请检查！
+<br/></div></td></tr></tbody></table></body></html>
