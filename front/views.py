@@ -1,15 +1,16 @@
-import json
-
+from django.http import StreamingHttpResponse, HttpResponse
+from django.views import View
+from pathlib import Path
+import time
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt,ensure_csrf_cookie
-
 from front import forms, models
+import logging
+import json
 
-
+logger = logging.getLogger('django')
 # Create your views here.
-
-
 def index(request):
     return render(request, 'base.html/')
 
@@ -193,6 +194,8 @@ def case_add(request):
     return JsonResponse({"success": False, "error": form.errors})
 
 def case_select(request,case_id):
+    from back.test import conslog
+    conslog(f"查询测试用例ID: {case_id}")
     querylist = models.test_case.objects.filter(id=case_id).first()
     if not querylist:
         return JsonResponse({"status": False, "error": "数据不存在"})
@@ -215,3 +218,115 @@ def case_edit(request):
     if form.is_valid():
         form.save()
         return JsonResponse({"success": True, "status": 200})
+
+
+
+
+
+class LogStreamView(View):
+    """
+        日志流视图
+        读取日志文件并实时推送到前端
+    """
+    def __init__(self):
+        # 日志文件路径
+        self.log_file = Path("logs/front.log")
+        # 确保日志目录存在
+        self.log_file.parent.mkdir(exist_ok=True)
+
+    def get(self, request):
+        """
+        处理SSE连接请求
+        前端通过 EventSource('/api/logs/stream/') 连接到这里
+        """
+        
+        def log_generator():
+            """
+            日志生成器
+            这个函数会被StreamingHttpResponse调用
+            """
+            print(f"新的SSE连接建立: {request.META.get('REMOTE_ADDR')}")
+            
+            try:
+                # 1. 发送连接成功消息
+                yield self._format_sse_event('system', {
+                    'status': 'connected',
+                    'message': 'SSE连接已建立'
+                })
+                
+                # 2. 发送历史日志（最后20行）
+                history_logs = self._read_last_lines(20)
+                for log in history_logs:
+                    yield self._format_sse_event('log', {
+                        'type': 'history',
+                        'content': log,
+                        'timestamp': time.time()
+                    })
+                
+                # 3. 实时监控新日志
+                with open(self.log_file, 'r', encoding='utf-8') as f:
+                    # 移动到文件末尾
+                    f.seek(0, 2)
+                    
+                    # 记录心跳次数
+                    heartbeat_count = 0
+                    
+                    while True:
+                        # 尝试读取新行
+                        line = f.readline()
+                        
+                        if line:
+                            # 有新日志，推送到前端
+                            yield self._format_sse_event('log', {
+                                'type': 'realtime',
+                                'content': line.strip(),
+                                'timestamp': time.time()
+                            })
+                        else:
+                            # 没有新日志，发送心跳保持连接
+                            heartbeat_count += 1
+                            if heartbeat_count % 10 == 0:  # 每10次心跳发送一次状态
+                                yield self._format_sse_event('system', {
+                                    'type': 'heartbeat',
+                                    'count': heartbeat_count
+                                })
+                            else:
+                                yield ": heartbeat\\n\\n"
+                            
+                            # 短暂等待
+                            time.sleep(0.5)
+                            
+            except GeneratorExit:
+                # 生成器被外部关闭（通常是客户端断开）
+                print("客户端断开连接")
+            except Exception as e:
+                # 其他异常
+                print(f"日志生成器异常: {e}")
+                yield self._format_sse_event('error', {
+                    'message': str(e)
+                })
+        
+        # 创建流式响应
+        response = StreamingHttpResponse(
+            log_generator(),
+            content_type='text/event-stream'
+        )
+        
+        # 重要：设置HTTP头
+        response['Cache-Control'] = 'no-cache'
+        response['X-Accel-Buffering'] = 'no'
+        
+        return response
+
+    def _read_last_lines(self, count):
+        """读取最后N行日志"""
+        if not self.log_file.exists():
+            return []
+        
+        with open(self.log_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            return [line.strip() for line in lines[-count:]] if lines else []
+
+    def _format_sse_event(self, event_type, data):
+        """格式化SSE事件"""
+        return f"event: {event_type}\\ndata: {json.dumps(data, ensure_ascii=False)}\\n\\n"

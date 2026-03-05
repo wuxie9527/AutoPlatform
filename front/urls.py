@@ -44,4 +44,7 @@ urlpatterns = [
     # path('case/delete/<int:case_id>/', views.case_delete),
     path('case/select/<int:case_id>/', views.case_select),
     path('case/edit/', views.case_edit),
+
+    #日志流
+    path('logs/stream/', views.LogStreamView.as_view(), name='log_stream'), 
 ]
