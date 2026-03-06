@@ -83,7 +83,7 @@ function disconnectSSE() {
         eventSource.close();
         eventSource = null;
         updateStatus('disconnected', '已断开');
-        addLog('⏹ 手动断开连接', 'system');
+        addLog('手动断开连接', 'system');
     }
 }
 

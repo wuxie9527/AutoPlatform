@@ -176,12 +176,14 @@ def case_list(request):
     test_object_list = models.evn_config.objects.values_list("test_object_config", flat=True)
     type_list = models.interface.method_choices
     project_list = models.project.objects.all()
+    evn_list =models.evn_config.objects.all()
     content = {
         "interface_querylist": interface_list,
         "case_querylist": models.test_case.objects.all(),
         "test_object_list": test_object_list,
         "type_list": type_list,
-        "project_list": project_list
+        "project_list": project_list,
+        "evn_list": evn_list
     }
     return render(request, 'project/test_case.html', content)
 
@@ -194,8 +196,6 @@ def case_add(request):
     return JsonResponse({"success": False, "error": form.errors})
 
 def case_select(request,case_id):
-    from back.test import conslog
-    conslog(f"查询测试用例ID: {case_id}")
     querylist = models.test_case.objects.filter(id=case_id).first()
     if not querylist:
         return JsonResponse({"status": False, "error": "数据不存在"})
@@ -219,7 +219,14 @@ def case_edit(request):
         form.save()
         return JsonResponse({"success": True, "status": 200})
 
-
+def case_run(request):
+    data = json.loads(request.body)
+    case_id = data.get("case_id")
+    # 这里可以调用测试执行逻辑，暂时模拟执行结果
+    logger.info(f"开始执行测试用例ID: {case_id}")
+    time.sleep(2)  # 模拟执行时间
+    logger.info(f"完成执行测试用例ID: {case_id}")
+    return JsonResponse({"success": True, "status": 200, "message": f"测试用例ID {case_id} 执行完成"})
 
 
 
