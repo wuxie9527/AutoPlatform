@@ -47,5 +47,5 @@ urlpatterns = [
     path('case/run/', views.case_run),
 
     #日志流
-    path('logs/stream/', views.LogStreamView.as_view(), name='log_stream'), 
+    path('logs/stream/', views.LogStreamView.as_view(), name='log_stream'),
 ]

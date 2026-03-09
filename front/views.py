@@ -8,7 +8,8 @@ from django.views.decorators.csrf import csrf_exempt,ensure_csrf_cookie
 from front import forms, models
 import logging
 import json
-
+import threading
+import os
 logger = logging.getLogger('django')
 # Create your views here.
 def index(request):
@@ -220,13 +221,46 @@ def case_edit(request):
         return JsonResponse({"success": True, "status": 200})
 
 def case_run(request):
-    data = json.loads(request.body)
-    case_id = data.get("case_id")
-    # 这里可以调用测试执行逻辑，暂时模拟执行结果
-    logger.info(f"开始执行测试用例ID: {case_id}")
-    time.sleep(2)  # 模拟执行时间
-    logger.info(f"完成执行测试用例ID: {case_id}")
-    return JsonResponse({"success": True, "status": 200, "message": f"测试用例ID {case_id} 执行完成"})
+    try:
+        testEnvId = request.GET.get("evn_id")
+        case_id = request.GET.get("case_id")
+        if not case_id or not testEnvId:
+            return JsonResponse({'success': False, 'error': '参数错误'})
+        
+        # 启动后台线程执行测试
+        thread = threading.Thread(
+            target=execute_test_in_background,
+            args=(testEnvId, case_id),
+            daemon=True
+        )
+        thread.start()
+
+        return JsonResponse({
+            'success': True,
+            'message': '测试已开始执行',
+            'case_id': case_id,
+            'testEnvId': testEnvId
+        })
+    except Exception as e:
+        logger.error(f"执行测试用例失败: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+
+def execute_test_in_background(testEnvId, case_id):
+    """
+    后台线程执行测试用例的函数
+    这里可以调用实际的测试执行逻辑，并将日志写入日志文件
+    """
+    logger.info(f"开始执行测试用例: case_id={case_id}, testEnvId={testEnvId}")
+    
+    # 模拟测试执行过程
+    for i in range(1, 11):
+        logger.info(f"执行步骤 {i}/10: 测试进行中...")
+        time.sleep(1)  # 模拟每个步骤耗时
+    
+    logger.info("测试执行完成！")
+
 
 
 
@@ -246,72 +280,125 @@ class LogStreamView(View):
         处理SSE连接请求
         前端通过 EventSource('/api/logs/stream/') 连接到这里
         """
-        
         def log_generator():
             """
             日志生成器
             这个函数会被StreamingHttpResponse调用
-            """
-            print(f"新的SSE连接建立: {request.META.get('REMOTE_ADDR')}")
+            """            
             
-            try:
-                # 1. 发送连接成功消息
-                yield self._format_sse_event('system', {
-                    'status': 'connected',
-                    'message': 'SSE连接已建立'
+            # 1. 发送连接成功消息
+            yield self._format_sse_event('system', {
+                'status': 'connected',
+                'message': 'SSE连接已建立'
+            })
+            
+            # 2. 发送历史日志（最后20行）
+            history_logs = self._read_last_lines(5)
+            for log in history_logs:
+                yield self._format_sse_event('log', {
+                    'type': 'history',
+                    'content': log,
                 })
                 
-                # 2. 发送历史日志（最后20行）
-                history_logs = self._read_last_lines(20)
-                for log in history_logs:
-                    yield self._format_sse_event('log', {
-                        'type': 'history',
-                        'content': log,
-                        'timestamp': time.time()
-                    })
-                
-                # 3. 实时监控新日志
+            # 3. 实时监控新日志
+            try:
+                # 使用更可靠的文件监控方式
+                 # 第一次打开，移动到文件末尾
                 with open(self.log_file, 'r', encoding='utf-8') as f:
-                    # 移动到文件末尾
-                    f.seek(0, 2)
-                    
-                    # 记录心跳次数
-                    heartbeat_count = 0
-                    
-                    while True:
-                        # 尝试读取新行
-                        line = f.readline()
-                        
-                        if line:
-                            # 有新日志，推送到前端
-                            yield self._format_sse_event('log', {
-                                'type': 'realtime',
-                                'content': line.strip(),
-                                'timestamp': time.time()
+                    f.seek(0, 2)  # 移动到文件末尾
+                    last_position = f.tell()         
+                inode = None
+                retry_count = 0
+
+                while True:
+                    try:
+                        # 检查文件是否存在
+                        if not self.log_file.exists():
+                            yield self._format_sse_event('warning', {
+                                'message': f'日志文件不存在: {self.log_file}'
                             })
-                        else:
-                            # 没有新日志，发送心跳保持连接
-                            heartbeat_count += 1
-                            if heartbeat_count % 10 == 0:  # 每10次心跳发送一次状态
+                            time.sleep(1)
+                            continue
+
+                        # 检查文件是否被轮转（inode变化）
+                        current_inode = os.stat(self.log_file).st_ino
+                        if inode is None:
+                            inode = current_inode
+                        elif inode != current_inode:
+                            # 文件被轮转，重新开始
+                            yield self._format_sse_event('system', {
+                                'type': 'file_rotated',
+                                'message': '检测到日志文件轮转'
+                            })
+                            inode = current_inode
+                            last_position = 0
+
+                        # 打开文件
+                        with open(self.log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                            # 如果文件被截断，重置位置
+                            f.seek(0, 2)
+                            current_size = f.tell()
+                            if current_size < last_position:
                                 yield self._format_sse_event('system', {
-                                    'type': 'heartbeat',
-                                    'count': heartbeat_count
+                                    'type': 'file_truncated',
+                                    'message': '检测到日志文件被清空'
                                 })
+                                last_position = 0
+
+                            # 移动到上次读取的位置
+                            f.seek(last_position)  # 从文件末尾开始读取
+
+                            # 读取所有新行
+                            new_lines = []
+                            while True:
+                                line = f.readline()
+                                if not line:  # 没有更多新行
+                                    break
+                                if line.strip():  # 跳过空行
+                                    new_lines.append(line.strip())
+
+                            # 如果有新行，推送
+                            if new_lines:
+                                for line in new_lines:
+                                    yield self._format_sse_event('log', {
+                                        'type': 'realtime',
+                                        'content': line,
+                                    })
+                                retry_count = 0  # 重置重试计数
                             else:
-                                yield ": heartbeat\\n\\n"
-                            
-                            # 短暂等待
-                            time.sleep(0.5)
-                            
+                                # 没有新内容，发送心跳
+                                retry_count += 1
+                                if retry_count % 20 == 0:  # 每20次心跳发送一次状态
+                                    yield self._format_sse_event('heartbeat', {
+                                        'count': retry_count,
+                                        'position': last_position,
+                                        'file_size': current_size
+                                    })
+
+                            # 更新最后位置
+                            last_position = f.tell()
+
+                        # 短时间等待
+                        time.sleep(0.1)  # 降低CPU使用率
+
+                    except (FileNotFoundError, PermissionError) as e:
+                        # 文件操作异常
+                        yield self._format_sse_event('error', {
+                            'message': f'文件访问异常: {str(e)}'
+                        })
+                        time.sleep(2)
+
             except GeneratorExit:
-                # 生成器被外部关闭（通常是客户端断开）
+                # 客户端断开连接
                 print("客户端断开连接")
+    
             except Exception as e:
                 # 其他异常
-                print(f"日志生成器异常: {e}")
+                print(f"日志监控异常: {e}")
                 yield self._format_sse_event('error', {
-                    'message': str(e)
+                    'message': f'监控进程异常: {str(e)}'
                 })
+                            
         
         # 创建流式响应
         response = StreamingHttpResponse(
@@ -336,4 +423,4 @@ class LogStreamView(View):
 
     def _format_sse_event(self, event_type, data):
         """格式化SSE事件"""
-        return f"event: {event_type}\\ndata: {json.dumps(data, ensure_ascii=False)}\\n\\n"
+        return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"

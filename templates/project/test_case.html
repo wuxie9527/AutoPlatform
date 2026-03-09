@@ -530,7 +530,8 @@
                         <div class="table-responsive">
                             <!-- 用例结果展示 -->
                             <div>
-                                <textarea class="form-control" id="run_case_result" rows="20" readonly style="background-color: #f0f0f0; color: #333; font-family: 'Courier New', monospace;"></textarea>
+                                <textarea class="form-control" id="run_case_result" rows="20" readonly placeholder="暂无执行日志，请先执行测试用例..." 
+                                style="background-color: #f0efef; color: #333; font-family: 'Courier New', monospace;"></textarea>
                             </div>
                         </div>
                     </div>
@@ -612,6 +613,8 @@
         $('#run_projectSelect').val('demo'); // 重置项目选择框
         $('#run_case_result').val(''); // 清空测试结果
         editId = null; // 重置编辑ID
+        disconnectSSE(); // 断开SSE连接，停止接收日志
+
     });
 
     function addSelectedInterfaces() {
@@ -655,7 +658,7 @@
                     <span class="step-index">${index}</span>
                 </td>
                 <td>
-                    <textarea class="form-control" style="width: 300px;front-size: 14px;" name="step_name" rows=2>${interface.name}</textarea>
+                    <textarea class="form-control" style="width: 300px;font-size: 14px;" name="step_name" rows=2>${interface.name}</textarea>
                     
                 </td>
                 <td class="step-url">
@@ -787,55 +790,42 @@
                         $('#run_case_name').val(res.data.case_name);
                         $('#run_projectSelect option[value="' + res.data.project_id + '"]').prop('selected', true);
                         $('#run_description').val(res.data.description);
-                        // $("#run_case_result").val('正在执行测试用例，请稍候...\n');
                         $("#runCaseModal").modal("show");
-                        // 通过SSE连接获取测试结果
-                        // const eventSource = new EventSource(`/front/case/run/${evn_id}/`);
-                        // eventSource.onmessage = function(event) {
-                        //     const data = JSON.parse(event.data);
-                        //     const currentTime = new Date().toLocaleTimeString();
-                        //     $("#run_case_result").val(prev => prev + `[${currentTime}] ${data.message}\n`);
-                        //     // 滚动到最新消息
-                        //     $("#run_case_result").scrollTop($("#run_case_result")[0].scrollHeight);
-                        //     if (data.status === 'finished') {
-                        //         eventSource.close();
-                        //     }
-                        // };
-                        // eventSource.onerror = function() {
-                        //     $("#run_case_result").val(prev => prev + '连接错误，无法获取测试结果。\n');
-                        //     eventSource.close();
-                        // };
                     }
                 }
         })
     }
     //运行测试用例
-    $('#run-testcase-btn').off('click').on('click', function() {
-            // 获取选中的环境ID
+    $('#run-testcase-btn').off('click').on('click', async function() {
             const testEnvId = $('#selectedEnvId').val();
-            const caseId = editId; // 使用全局变量存储当前编辑的用例ID
-            begin_test(caseId, testEnvId);
-        editId = null; // 重置编辑ID
-        });
-    async function begin_test(caseId, testEnvId) {
-                $.ajax({
-                url : '/front/case/run/?case_id=' + caseId +'&evn_id=' + testEnvId,
-                type: "post",
-                dataType:"JSON",
-                success:function (res) {
-                    if (res.success){
-                        alert('后端开始执行测试用例！');
-                    }else{
-                        alert(JSON.stringify(res.error) || '测试执行失败，请重试！');
-                    }
+            const caseId = editId;
+            if (!testEnvId || !caseId) {
+                alert('请先选择测试用例和环境！');
+                return;}
+            try {
+                // 1. 启动测试
+                const result = await $.ajax({
+                    url: '/front/case/run/?case_id=' + caseId +'&evn_id=' + testEnvId,
+                    type: 'POST',
+                    dataType:"JSON",
+                });
+                
+                if (!result.success) {
+                    throw new Error(result.error || '启动失败');
                 }
-                })
-                await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒后再连接SSE，确保后端已开始执行测试用例
+                
+                // 3. 连接SSE
+                // await new Promise(resolve => setTimeout(resolve, 1000));
+                connectSSE();
+                
+            } catch (error) {
+                alert('执行失败: ' + error.message);
+            } finally {
+                // editId = null; 
+
             }
 
-
-    
-            
+        });
 
     //编辑测试用例
     function bindBtnEditEvent(evn_id){
@@ -859,7 +849,7 @@
                                             <span class="step-index">${index+1}</span>
                                         </td>
                                         <td>
-                                            <textarea class="form-control" style="width: 300px;front-size: 14px;" name="step_name" rows=2>${target.name}</textarea>
+                                            <textarea class="form-control" style="width: 300px;font-size: 14px;" name="step_name" rows=2>${target.name}</textarea>
                                             
                                         </td>
                                         <td class="step-url">
@@ -884,7 +874,13 @@
                                 // 重新初始化拖拽功能
                                 initStepTableSortable();
                                 $("#addTestcaseModal").modal("show");
-                            }   )
+                                $('#addTestcaseModal').on('shown.bs.modal', function() {
+                                     // 解决模态框内表格溢出问题
+                                     if (window.stepTableOverflowManager) {
+                                        window.stepTableOverflowManager.refresh();
+                                     }
+                                });
+                            })
                         }}
                     })      
                     
@@ -893,11 +889,11 @@
 
 
     // 安全设置表格溢出处理，避免与其他功能冲突
-    function setupTableOverflowSafe() {
-        const table = document.querySelector('#stepTableBody');
+    function setupTableOverflowSafe(tableSelector = '#stepTableBody') {
+        const table = document.querySelector(tableSelector);
         
         if (!table) {
-            console.warn('Table with selector "#stepTableBody" not found.');
+            console.warn(`Table with selector "${tableSelector}" not found.`);
             return null;
         }
         
