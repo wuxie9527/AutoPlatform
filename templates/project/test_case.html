@@ -384,7 +384,8 @@
                                             </th>
                                             <th >ID</th>
                                             <th >步骤名称</th>
-                                            <th >测试地址</th>
+                                            <th style="padding: 10px;">测试地址</th>
+                                            <th style="width:150px">测试对象</th>
                                             <th style="width:100px">接口类型</th>
                                             <th style="width:150px">请求头</th>
                                             <th >请求体</th>
@@ -624,6 +625,7 @@
                 id: $(this).data('id'),
                 name: $(this).data('interface-name'),
                 url: $(this).data('url'),
+                test_object: $(this).data('test-object'),
                 header: $(this).data('header'),
                 body: $(this).data('body'),
                 method: $(this).data('method'),
@@ -646,13 +648,12 @@
     }
 
     function addInterfaceAsStep(interface) {
-    
         // 这里可以将接口ID添加到测试用例的步骤列表中
         const index = $("#stepTableBody tr").length + 1; // 获取当前步骤数量，作为新步骤的索引
         const newRow = `
-                <tr class="step-row" data-id="${interface.id}">
+                <tr class="step-row">
                 <td>
-                    <input type="checkbox" class="step-checkbox" id="testcase_select" data-id="${index}">
+                    <input type="checkbox" class="step-checkbox" id="testcase_select" data-id="${interface.id}">
                 </td>
                 <td class="text-left step-index-cell">
                     <span class="step-index">${index}</span>
@@ -661,8 +662,11 @@
                     <textarea class="form-control" style="width: 300px;font-size: 14px;" name="step_name" rows=2>${interface.name}</textarea>
                     
                 </td>
-                <td class="step-url">
+                <td class="step-url" style="padding: 15px;">
                     ${interface.url}
+                </td>
+                <td class="step-object">
+                    ${interface.test_object}
                 </td>
                 <td class="step-method">
                     ${interface.method}
@@ -736,10 +740,11 @@
         //搜集测试步骤数据
         $('#stepTableBody tr').each(function() {
             const step = {
-                interface_id: $(this).data('id'),
+                interface_id: $(this).find("#testcase_select").data('id'),
                 step_id: $(this).find('.step-index').text(),
-                name: $(this).find('textarea[name="step_name"]').val().trim(),
+                step_name: $(this).find('textarea[name="step_name"]').val().trim(),
                 url: $(this).find('.step-url').text().trim(),
+                object_name: $(this).find('.step-object').text().trim(),
                 method: $(this).find('.step-method').text().trim(),
                 header: $(this).find('.step-header').text().trim(),
                 body: $(this).find('.step-body').text().trim(),
@@ -747,6 +752,7 @@
             };
             testData.steps.push(step);
         });
+        
         // 这里可以添加实际的保存逻辑
             if (editId) {
                 url = '/front/case/edit/?case_id=' + editId
@@ -841,19 +847,22 @@
                                 $('#description').val(res.data.description);
                                 $.each(res.data.steps, function(index, target) {
                                     const newRow = `
-                                        <tr class="step-row" data-id="${target.id}">
+                                        <tr class="step-row">
                                         <td>
-                                            <input type="checkbox" class="step-checkbox" id="testcase_select" data-id="${index+1}">
+                                            <input type="checkbox" class="step-checkbox" id="testcase_select" data-id="${target.interface_id}">
                                         </td>
                                         <td class="text-left step-index-cell">
                                             <span class="step-index">${index+1}</span>
                                         </td>
                                         <td>
-                                            <textarea class="form-control" style="width: 300px;font-size: 14px;" name="step_name" rows=2>${target.name}</textarea>
+                                            <textarea class="form-control" style="width: 300px;font-size: 14px;" name="step_name" rows=2>${target.step_name}</textarea>
                                             
                                         </td>
-                                        <td class="step-url">
+                                        <td class="step-url" style="padding: 15px;">
                                             ${target.url}
+                                        </td>
+                                        <td class="step-object" style="padding: 15px;">
+                                            ${target.object_name}
                                         </td>
                                         <td class="step-method">
                                             ${target.method}

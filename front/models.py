@@ -32,6 +32,10 @@ class evn_config(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
+
+    def __str__(self):
+        return f"{self.evn_name} - {self.test_object_config} - {self.database_config}"
+
     class Meta:
         db_table = 'evn_config'  # 明确指定表名
         verbose_name = '环境配置'
@@ -106,7 +110,7 @@ class test_case(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     def __str__(self):
-        return self.case_name
+        return f"{self.case_name} - {self.steps}"
     
     class Meta:
         db_table = 'test_case'  # 明确指定表名
