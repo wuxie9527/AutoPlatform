@@ -194,5 +194,18 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        # ====== autoreload模块 - 完全禁用 ======
+        'django.utils.autoreload': {
+            'handlers': [],  # 关键：空处理器列表
+            'level': 'CRITICAL',
+            'propagate': False,
+        },
+        
+        # ====== django.server模块 - 控制访问日志 ======
+        'django.server': {
+            'handlers': ['access_file'],  # 只记录到文件，且只记录WARNING及以上
+            'level': 'INFO',  # 记录器级别设为INFO，但处理器会过滤
+            'propagate': False,
+        },
     },
 }
