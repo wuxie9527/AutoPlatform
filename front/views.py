@@ -252,31 +252,34 @@ def execute_test_in_background(testEnvId, case_id):
     后台线程执行测试用例的函数
     这里可以调用实际的测试执行逻辑，并将日志写入日志文件
     """
-    logger.info(f"开始执行测试用例: case_id={case_id}, testEnvId={testEnvId}")
     case_list = models.test_case.objects.filter(id=case_id)
     test_object = models.evn_config.objects.filter(id=testEnvId).first()
     if not case_list:
         logger.error(f"测试用例不存在: case_id={case_id}")
         return
-    
-#steps：[{'interface_id': 2, 'step_id': '1', 'step_name': '步骤名称1', 'url': '/evogoAdmin/operation/maintenance/standard/pages', 'object_name': '运维', 
-# 'method': 'GET', 'header': 'admin_header', 'body': "{'current': 1, 'pageSize': 10, 'name': '维保基准接口测试', 'type': 'INSPECTIONCOUNT', 
-# 'status': 1, 'stationModelCode': '山崎站体', 'currPage': 1}", 'params': '{"params":"23"}'}]
-
-#对象 预发环境 - [{'name': '财务系统', 'url': '127.0.0.1', 'port': '8000', 'protocol': 'HTTP'}] - [{'type': 'mysql', 'name': 'auto', 'host': '127.0.0.1', 
-# 'port': '3306', 'username': 'user', 'password': 'user'}]
-# 整合测试数据
-    test_obj_data   = {}
-    for object in test_object.test_object_config:
-        if object['name'] == case_list[0].steps[0]['object_name']:
-            object_config = object
-            break
-    if not object_config:
-        logger.error(f"测试对象配置未找到: object_name={case_list[0].steps[0]['object_name']}")
-        return
-    test_obj_data['url'] = object_config.get('url', '') + ":" + object_config.get('port', '')
+    logger.info(f"开始执行测试用例: 用例名称：{case_list[0].case_name}, 测试环境：{test_object.evn_name}")
+    test_obj_data = {}
+    test_obj_data['test_object'] = test_object.test_object_config
     test_obj_data['database_config'] = test_object.database_config
-    logger.info(f"测试对象数据: {test_obj_data}")
+    cases = []
+    for case in case_list[0].steps:
+        interface_obj = models.interface.objects.get(id=case.get("interface_id"))
+        request_header = models.variable.objects.get(var_type= "header",key=case.get("header"))
+        step = {
+            "步骤ID" : case.get("step_id"),
+            "步骤名称": case["step_name"],
+            "执行方式": case["method"],
+            "url":  case["url"],
+            "测试对象名称": case["object_name"],
+            "header": request_header.value,
+            "body": case["body"],
+            "参数": case["params"],
+            "接口校验": interface_obj.check_interface,
+            "数据库校验": interface_obj.check_db,
+            "变量输出": interface_obj.export_variable,
+        }
+        cases.append(step)
+    debug_case(cases,test_obj_data,logger)
     return
 
 

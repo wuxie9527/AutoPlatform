@@ -85,7 +85,7 @@ class interface(models.Model):
     body = models.JSONField(verbose_name='请求参数', blank=True, null=True, default=dict)
     test_object = models.CharField(verbose_name='测试对象', max_length=100)
     check_interface = models.CharField(verbose_name='校验接口', blank=True, null=True, max_length=50)
-    check_db = models.CharField(verbose_name='校验数据库', blank=True, null=True)
+    check_db = models.CharField(verbose_name='校验数据库', blank=True, null=True,max_length = 500)
     export_variable = models.CharField(verbose_name='输出变量', blank=True, null=True, max_length=50)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
