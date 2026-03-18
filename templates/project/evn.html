@@ -586,7 +586,7 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>数据库名称</label>
-                                                                <input type="text" class="form-control database-name" value="${db.name}" required>
+                                                                <input type="text" class="form-control database-name" value="${db.dbName}" required>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -594,13 +594,13 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>主机地址</label>
-                                                                <input type="text" class="form-control database-host" value="${db.host}" placeholder="如：localhost" required>
+                                                                <input type="text" class="form-control database-host" value="${db.dbIp}" placeholder="如：localhost" required>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>端口号</label>
-                                                                <input type="number" class="form-control database-port" value="${db.port}" placeholder="如：3306" min="1" max="65535" required>
+                                                                <input type="number" class="form-control database-port" value="${db.dbPort}" placeholder="如：3306" min="1" max="65535" required>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -608,20 +608,20 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>用户名</label>
-                                                                <input type="text" class="form-control database-username" value="${db.username}" placeholder="数据库用户名" required>
+                                                                <input type="text" class="form-control database-username" value="${db.userName}" placeholder="数据库用户名" required>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>密码</label>
-                                                                <input type="password" class="form-control database-password" value="${db.password}" placeholder="数据库密码" required>
+                                                                <input type="password" class="form-control database-password" value="${db.passWord}" placeholder="数据库密码" required>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>`
                                     $('.database-configs-container').append(dbItem);
-                                    $('.database-type').val(db.type);
+                                    $('.database-type').val(db.dbType);
 
                                                 })
                             $("#addEnvModal").modal("show");
