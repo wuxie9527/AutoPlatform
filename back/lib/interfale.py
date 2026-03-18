@@ -6,7 +6,7 @@
 
 import re
 import requests.exceptions as exceptions
-from config.Commom import image_path
+from back.config.Commom import image_path
 from urllib import parse
 
 
@@ -24,16 +24,16 @@ class HTTP(object):
     http:接口测试相关函数
     """
 
-    def __init__(self, url, headers, cookie=None):
+    def __init__(self, url, gol_val, logger,cookie=None):
         if cookie is None:
             cookie = {}
         self.module = __import__('requests')
         self.url = url
         self.cookie = cookie
-        self.logger = None
+        self.logger = logger
         # self.hexReStr = "(\\\\u([a-f0-9]{4}))"
         self.method_2_method = {"post": self.post, "get": self.get, "put": self.put}
-        self.glob = headers
+        self.glob = gol_val
 
     def is_chinese(self, string):
         '''
@@ -49,7 +49,7 @@ class HTTP(object):
         cookiesDict = dict(req.cookies)
         if cookiesDict:
             self.cookie.update(cookiesDict)
-            self.glob.update_global_dict(self.cookie)
+            self.glob.set_value("cookies",self.cookie)
         return req.text
 
     def get(self, url, paramsvalue=None, headers=None, json=None):
@@ -58,7 +58,7 @@ class HTTP(object):
         cookiesDict = dict(req.cookies)
         if cookiesDict:
             self.cookie.update(cookiesDict)
-            self.glob.update_one('cookies', self.cookie)
+            self.glob.set_value("cookies",self.cookie)
         return req.text
 
     def post(self, url, paramsvalue=None, headers=None, json=None, files=None):
@@ -70,8 +70,7 @@ class HTTP(object):
             raise ClassInterface('服务器连接出现异常，请确认config文件中测试对象配置信息是否书写正确，服务器应用是否正常启动！')
         if cookiesDict:
             self.cookie.update(cookiesDict)
-            self.glob.update_one('cookies',self.cookie)
-            self.glob.update_global_dict(self.cookie)
+            self.glob.set_value("cookies",self.cookie)
         return req.text
 
     def deal_with_recvdata(self, receive_str):
@@ -84,8 +83,9 @@ class HTTP(object):
 
     def send(self, method, headers, params, files: dict):
         headers = self.deal_with_header_data(headers)
-        method = self.method_2_method.get(method)
+        method = self.method_2_method.get(method.lower())
         if method is None:
+            self.logger.info(f"暂不支持此method:{method}，仅支持POST,PUT和GET，请检查")
             raise ClassInterface('暂不支持此method:{}，仅支持POST,PUT和GET，请检查'.format(method))
         if files:
             data = self.get_header_params(headers, params, files)

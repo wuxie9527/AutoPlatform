@@ -444,12 +444,12 @@
             // 收集数据库配置数据
             $('.database-config-item').each(function () {
                 var dbData = {
-                    type: $(this).find('.database-type').val(),
-                    name: $(this).find('.database-name').val(),
-                    host: $(this).find('.database-host').val(),
-                    port: $(this).find('.database-port').val(),
-                    username: $(this).find('.database-username').val(),
-                    password: $(this).find('.database-password').val()
+                    dbType: $(this).find('.database-type').val(),
+                    dbName: $(this).find('.database-name').val(),
+                    dbIp: $(this).find('.database-host').val(),
+                    dbPort: $(this).find('.database-port').val(),
+                    userName: $(this).find('.database-username').val(),
+                    passWord: $(this).find('.database-password').val()
                 };
                 envData.database_config.push(dbData);
             });

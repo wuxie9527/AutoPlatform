@@ -4,15 +4,16 @@
 @Author : HeXW
 """
 import json
-from lib.Manager import Manager
-from util.CollectUtil import wait
+from back.lib.Manager import Manager
+from back.util.CollectUtil import wait
 
 
 class check:
 
-    def __init__(self, receive_str, manage: Manager):
+    def __init__(self, receive_str, manage: Manager, logger):
         self.receive_str = receive_str
         self.manage = manage
+        self.logger = logger
 
     def traverse_take_field(self, data, fields, values={}, currentKey=None):
         """
@@ -63,32 +64,32 @@ class check:
             for key in expectDict:
                 expectKey.append(key)
             actData = self.traverse_take_field(receive_str, expectKey, values={})
-            print('接口实际返回值：{}'.format(actData))
-            print('期望值:{}'.format(checkParams))
+            self.logger.info('接口实际返回值：{}'.format(actData))
+            self.logger.info('期望值:{}'.format(checkParams))
             if expectDict:
                 for key, value in expectDict.items():
                     assert actData != {}
                     assert str(value) == str(actData[key])
-                    print("效验通过，期望值：{}=实际值:{}".format(value, actData[key]))
+                    self.logger.info("效验通过，期望值：{}=实际值:{}".format(value, actData[key]))
             if expectList:
                 for i in expectList:
                     assert i in str(receive_str)
-                    print('校验通过，期望值：{}在返回值中'.format(i))
+                    self.logger.info('校验通过，期望值：{}在返回值中'.format(i))
         else:
             raise CheckerError('接口检查错误，返回数据为空')
 
-    def deal_with_dbChecker(self, sqlCheck, tstOBj, header):
+    def deal_with_dbChecker(self, sqlCheck):
         sqlList = sqlCheck.split(',') if ',' in sqlCheck else [sqlCheck]
         for eachSqlCheck in sqlList:
             dbDefaultName = 'default'
             if '#' in eachSqlCheck:
                 dbDefaultName = sqlCheck.split('#')[0]
             if dbDefaultName not in self.manage.dbObject.db_conn_infos:
-                self.manage.initDbObject(dbDefaultName, tstOBj)
+                self.manage.initDbObject(dbDefaultName)
             else:
-                print('数据库别名已在配置当中，直接返回')
+                self.logger.info('数据库别名已在配置当中，直接返回')
             # 判断sql是交验还是赋值
-            sql, check_or_param = self.deal_with_sql(eachSqlCheck, headerObj_gal=header)
+            sql, check_or_param = self.deal_with_sql(eachSqlCheck)
             if sql.lower().startswith('select'):
                 # 期望值中带$，表示复值
                 if '$' in check_or_param:
@@ -98,19 +99,19 @@ class check:
                     if len(result) == 1 and isinstance(result, list):
                         dic[variableKey] = result[0]
                         self.manage.add_global(dic)
-                        print('数据库赋值完成，已经添加：{}到全局变量'.format(dic))
-                        # print('全局变量：{}'.format(self.manage.globalDict))
+                        self.logger.info('数据库赋值完成，已经添加：{}到全局变量'.format(dic))
+                        # self.logger.info('全局变量：{}'.format(self.manage.globalDict))
                     else:
                         raise CheckerError('sql查询结果为空或者同时有多个参数赋值')
                 else:
                     expectVal = check_or_param
-                    print('开始执行sql：{}'.format(sql))
+                    self.logger.info('开始执行sql：{}'.format(sql))
                     result = wait(sql, self.manage.dbObject, expectVal, timeOut=2)
                     assert result == 'true'
             else:
-                print('开始执行sql：{}'.format(sql))
+                self.logger.info('开始执行sql：{}'.format(sql))
                 result = self.manage.dbObject.db_execute(sql)
-                print(result)
+                self.logger.info(result)
                 assert result[0][0] == 1
 
     def export_Params(self, export_params: str, requestParam):
@@ -124,11 +125,11 @@ class check:
                 dic.update(val)
             # 输出请求参数到局部全局变量
             self.manage.globalDict.update(dic)
-            print('全局变量设置完成：{}'.format(self.manage.globalDict))
+            self.logger.info('全局变量设置完成：{}'.format(self.manage.globalDict))
         else:
             # raise CheckerError('接口检查错误，返回数据为空')
             self.export_request_params(requestParam, params)
-            print('全局变量设置完成：{}'.format(self.manage.globalDict))
+            self.logger.info('全局变量设置完成：{}'.format(self.manage.globalDict))
 
     def export_request_params(self, request_param, fields, currentKey=None):
         if isinstance(request_param, list):
@@ -141,18 +142,15 @@ class check:
             if currentKey in fields:
                 self.manage.globalDict.update({currentKey: request_param})
 
-    def deal_with_sql(self, sql: str, headerObj_gal):
+    def deal_with_sql(self, sql: str):
         sql, expect = sql.split('|')
         expect = expect.strip()
         sqlList = sql.split(' ')
         for i in range(len(sqlList)):
             if sqlList[i].startswith('$'):
                 val = sqlList[i].replace('$', '')
-                if val in self.manage.get_global or val in headerObj_gal.get_global_dict():
-                    if val in self.manage.get_global:
-                        val = self.manage.get_global[val]
-                    else:
-                        val = headerObj_gal.get_value(val)
+                if val in self.manage.globalDict:
+                    val = self.manage.globalDict[val]
                     sqlList[i] = repr(val)
                 else:
                     raise CheckerError('变量{},不再全局变量中'.format(val))

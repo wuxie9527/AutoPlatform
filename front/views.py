@@ -1,3 +1,4 @@
+from django.forms import model_to_dict
 from django.http import StreamingHttpResponse, HttpResponse
 from django.views import View
 from pathlib import Path
@@ -10,11 +11,13 @@ import logging
 import json
 import threading
 import os
+from back.testcase.debug import debug_case
+
+
+
 logger = logging.getLogger('django')
-# Create your views here.
 def index(request):
     return render(request, 'base.html/')
-
 
 #项目管理
 def project_list(request):
@@ -177,7 +180,7 @@ def case_list(request):
     test_object_list = models.evn_config.objects.values_list("test_object_config", flat=True)
     type_list = models.interface.method_choices
     project_list = models.project.objects.all()
-    evn_list =models.evn_config.objects.all()
+    evn_list =models.evn_config.objects.exclude(evn_name='通用')
     content = {
         "interface_querylist": interface_list,
         "case_querylist": models.test_case.objects.all(),
@@ -254,13 +257,19 @@ def execute_test_in_background(testEnvId, case_id):
     """
     case_list = models.test_case.objects.filter(id=case_id)
     test_object = models.evn_config.objects.filter(id=testEnvId).first()
+    google_variable = models.variable.objects.filter(var_type="val",evn=testEnvId).values('key', 'value')
+    variable = {}
+    for i in google_variable:
+        variable[i["key"]] = i["value"]
     if not case_list:
         logger.error(f"测试用例不存在: case_id={case_id}")
         return
+    time.sleep(1)
     logger.info(f"开始执行测试用例: 用例名称：{case_list[0].case_name}, 测试环境：{test_object.evn_name}")
     test_obj_data = {}
     test_obj_data['test_object'] = test_object.test_object_config
     test_obj_data['database_config'] = test_object.database_config
+    test_obj_data['google_variable'] = variable
     cases = []
     for case in case_list[0].steps:
         interface_obj = models.interface.objects.get(id=case.get("interface_id"))
@@ -275,7 +284,7 @@ def execute_test_in_background(testEnvId, case_id):
             "body": case["body"],
             "参数": case["params"],
             "接口校验": interface_obj.check_interface,
-            "数据库校验": interface_obj.check_db,
+            "数据库检查": interface_obj.check_db,
             "变量输出": interface_obj.export_variable,
         }
         cases.append(step)
@@ -303,11 +312,6 @@ class LogStreamView(View):
         前端通过 EventSource('/api/logs/stream/') 连接到这里
         """
         def log_generator():
-            """
-            日志生成器
-            这个函数会被StreamingHttpResponse调用
-            """            
-            
             # 1. 发送连接成功消息
             yield self._format_sse_event('system', {
                 'status': 'connected',
@@ -315,12 +319,12 @@ class LogStreamView(View):
             })
             
             # 2. 发送历史日志（最后20行）
-            history_logs = self._read_last_lines(5)
-            for log in history_logs:
-                yield self._format_sse_event('log', {
-                    'type': 'history',
-                    'content': log,
-                })
+            # history_logs = self._read_last_lines(0)
+            # for log in history_logs:
+            #     yield self._format_sse_event('log', {
+            #         'type': 'history',
+            #         'content': log,
+            #     })
                 
             # 3. 实时监控新日志
             try:

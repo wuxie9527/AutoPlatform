@@ -3,7 +3,7 @@
 @Time : 2021/4/21 上午11:32
 @Author : HeXW
 """
-from lib.Config import config
+from back.lib.Config import config
 
 
 class interObj:
@@ -35,5 +35,3 @@ if __name__ == '__main__':
     initer = interObj.readInter('save-image')
     print(initer.get('params'))
     print(eval(initer.get('params')))
-
-

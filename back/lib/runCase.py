@@ -3,15 +3,12 @@
 @Time : 2022/4/19 下午5:53
 @Author : HeXW
 """
-from lib.interObj import interObj
-from lib.testObj import testObj
-from lib.dealParamsData import dealRequestData
-from lib.interfale import HTTP
-from lib.check import check
-from lib.Manager import Manager
-import caseConfig
-from lib.Config import config
-import caseConfig as cf
+
+from back.lib.dealParamsData import dealRequestData
+from back.lib.interfale import HTTP
+from back.lib.check import check
+from back.lib.Manager import Manager
+import re
 
 
 def check_caseStep_params(caseStep):
@@ -19,120 +16,81 @@ def check_caseStep_params(caseStep):
         caseStep['参数'] = caseStep['参数'].replace("\n", '')
     elif '，' in str(caseStep['参数']):
         caseStep['参数'] = caseStep['参数'].replace("，", ',')
-    elif '\n' in caseStep['数据输出']:
-        caseStep['数据输出'] = caseStep['数据输出'].replace("\n", '')
-    elif '，' in caseStep['数据输出']:
-        caseStep['数据输出'] = caseStep['数据输出'].replace("，", ',')
-    elif '\n' in caseStep['数据库检查']:
-        caseStep['数据库检查'] = caseStep['数据库检查'].replace("\n", '')
-    elif '，' in caseStep['数据库检查']:
-        caseStep['数据库检查'] = caseStep['数据库检查'].replace("，", ',')
+    elif '\n' in caseStep['变量输出']:
+        caseStep['变量输出'] = caseStep['变量输出'].replace("\n", '')
+    elif '，' in caseStep['变量输出']:
+        caseStep['变量输出'] = caseStep['变量输出'].replace("，", ',')
+    elif caseStep['数据库检查']:
+        if '\n' in caseStep['数据库检查']:
+            caseStep['数据库检查'] = caseStep['数据库检查'].replace("\n", '')
+    elif caseStep['数据库检查']:
+        if '，' in caseStep['数据库检查']:
+            caseStep['数据库检查'] = caseStep['数据库检查'].replace("，", ',')
 
 
 class runCase:
-    def __init__(self):
-        self.manage = Manager()
-        self.dealData = dealRequestData(self.manage)
+    def __init__(self, logger, test_object):
+        self.manage = Manager(logger, test_object)
+        self.dealData = dealRequestData(self.manage, logger)
+        self.logger = logger
+        self.gol_val = test_object
 
-    def runCase(self, CaseData, headers):
+    def runCase(self, CaseData):
         # 如果是字典说明只有一个步骤
         CaseData = CaseData if isinstance(CaseData, list) else [CaseData]
         for caseStep in CaseData:
             # 判断执行用例还是接口
-            if caseStep['调试'] == 'N':
-                continue
-            if caseStep['执行方式'] == '用例':
-                testCaseNum = int(caseStep['参数'])
-                allCase = config().get_exe_data(cf.excelName, cf.sheetName)
-                self.runCase(allCase[testCaseNum], headers)
-                continue
+            # if caseStep['执行方式'] == '用例':
+            #     testCaseNum = int(caseStep['参数'])
+            #     # allCase = config().get_exe_data(cf.excelName, cf.sheetName)
+            #     # self.runCase(allCase[testCaseNum])
+            #     continue
             # 获取测试对象名称
-            print('=================================================================')
-            print('开始执行测试用例：{}的{}，{}'.format(caseStep['用例名称'], caseStep['测试步骤'], caseStep['描述']))
-            print('测试步骤信息：{}'.format(caseStep))
-            testEnvironment = headers.get_value('testEnvironment')
-            tstObj = self.get_test_obj(testEnvironment)
+            self.logger.info('=================================================================')
+            self.logger.info('开始执行测试步骤-{}：{}'.format(caseStep['步骤ID'], caseStep['步骤名称']))
+            self.logger.info('测试步骤信息：{}'.format(caseStep))
+            tstObj = self.manage.testObjectDict[caseStep["测试对象名称"]]
+            self.logger.info('拼接好的url：{}'.format(tstObj))
             if caseStep['执行方式'] == 'redis':
                 self.getInspect(caseStep, tstObj)
                 continue
-            # 获取文件全局变量
-            gloVal = tstObj.get_testObj_gloBallVal()
-            if gloVal:
-                # 将全局变量添加的局部全局变量
-                self.manage.globalDict.update(eval(gloVal))
+
             # 检查文件格式是否正确
             check_caseStep_params(caseStep)
-            # 获取接口路径
-            interName = caseStep['接口名称']
-            interData = interObj.readInter(interName, caseConfig.faceName)
+
             # 处理params和url
-            caseStep = self.dealData.get_send_params(caseStep, tstObj, interData, headers.get_global_dict())
+            caseStep = self.dealData.get_send_params(caseStep)
+            self.logger.info(f'处理完的测试步骤数据========”{caseStep}')
             # 获取请求头信息
-            headersDict = self.get_header(headers, caseStep['请求头'])
-            if caseStep['请求头参数']:
-                self.update_headersDict(headersDict, caseStep['请求头参数'])
-            # 将 device 添加到全局变量，在把全局变量更新到请求头
-            # if caseStep['用例名称'].startswith('登陆') and caseStep['测试步骤'] == 'setp1':
-            #     headersDict = self.deal_with_headers(caseStep, headersDict, headers)
+            headersDict = caseStep["header"]
+            headersDict = self.update_headersDict(eval(headersDict))
             headersDict = self.check_headerSpace(headersDict)
             # 发送request
             cookie = None
-            if headers.get_value('cookies'):
-                cookie = eval(headers.get_value('cookies'))
-            http = HTTP(caseStep['url'], headers, cookie)
-            print('请求url：{}'.format(caseStep['url']))
-            print('请求头：{}'.format(headersDict))
-            print('请求参数：{}'.format(caseStep['params']))
-            receive_str = http.send(caseStep['method'], headersDict, caseStep['params'], caseStep['files'])
-            print('请求成功返回参数：{}'.format(receive_str))
-            checker = check(receive_str, self.manage)
-            if caseStep['接口检查']:
-                checker.check_receive_str(caseStep['接口检查'])
-            if caseStep['数据输出']:
-                checker.export_Params(caseStep['数据输出'], caseStep['params'])
+            if "cookies" in self.manage.globalDict:
+                cookie = self.manage.globalDict["cookies"]
+            http = HTTP(caseStep['url'], self.gol_val, self.logger, cookie)
+            self.logger.info('请求url：{}'.format(caseStep['url']))
+            self.logger.info('请求头：{}'.format(headersDict))
+            self.logger.info('请求参数：{}'.format(caseStep['body']))
+            # 处理上传文件
+            files = None
+            receive_str = http.send(caseStep['执行方式'], headersDict, caseStep['body'], files)
+            self.logger.info('请求成功返回参数：{}'.format(receive_str))
+            checker = check(receive_str, self.manage, self.logger)
+            if caseStep['接口校验']:
+                checker.check_receive_str(caseStep['接口校验'])
+            if caseStep['变量输出']:
+                checker.export_Params(caseStep['变量输出'], caseStep['body'])
             if caseStep['数据库检查']:
-                checker.deal_with_dbChecker(caseStep['数据库检查'], tstObj, headers)
-            if interName in caseConfig.location_to_headers:
-                headersDict = eval(headersDict)
-                headersDict['location'] = self.manage.globalDict['location']
-                headers.set_value(key=caseStep['请求头'], value=headersDict)
-            elif interName == 'get-token':
-                token = self.manage.globalDict['sessionToken']
-                authorization = 'Bearer ' + token
-                headers.update_one('headers', {'authorization': authorization})
-            elif interName == 'getToken':
-                token = self.manage.globalDict['sessionToken']
-                authorization = 'Bearer ' + token
-                headers.update_one('smyHeaders', {'authorization': authorization})
-            elif interName == 'get-token-three':
-                token = self.manage.globalDict['sessionToken']
-                authorization = 'Bearer ' + token
-                headers.update_one('hjsHeaders', {'authorization': authorization})
-            elif interName == 'getToken-four':
-                token = self.manage.globalDict['sessionToken']
-                authorization = 'Bearer ' + token
-                headers.update_one('shHeaders', {'authorization': authorization})
-            if caseStep['请求头参数']:
-                self.pop_headersDict(headersDict, caseStep['请求头参数'])
+                checker.deal_with_dbChecker(caseStep['数据库检查'], tstObj)
+            # if interName in caseConfig.location_to_headers:
+            #     headersDict = eval(headersDict)
+            #     headersDict['location'] = self.manage.globalDict['location']
+            #     headers.set_value(key=caseStep['请求头'], value=headersDict)
 
-    @staticmethod
-    def get_header(headersOBJ, headerName) -> dict:
-        """
-        headerName获取请求头，如在headersOBJ里面不存在，就去文件里找，在放到对象里
-        :param headersOBJ: 全局变量，请求头管理对项
-        :param headerName: 请求头名字
-        :return: 根据请求头name，返回请求头字典格式
-        """
-        if headerName not in headersOBJ.get_global_dict():
-            head = interObj.readHeaders(headerName, caseConfig.faceName)
-            headersOBJ.set_value(headerName, eval(head['headers']))
-        try:
-            return eval(headersOBJ.get_value(headerName))
-        except Exception:
-            raise Exception('请求头格式不正确')
 
-    @staticmethod
-    def check_headerSpace(headers):
+    def check_headerSpace(self,headers):
         """
         请求头key，value头尾去空格
         :param headers:
@@ -148,13 +106,6 @@ class runCase:
         import time
         return round(time.time() * 1000)
 
-    def get_test_obj(self, tstEl):
-        if tstEl in self.manage.testObjectDict:
-            tstObj = self.manage.testObjectDict.get(tstEl)
-        else:
-            tstObj = testObj(testObj.redTestObj(tstEl))
-            self.manage.add_tst_obj(tstEl, tstObj)
-        return tstObj
 
     def deal_with_headers(self, caseStp, headersDict, headers):
         # self.manage.globalDict['deviceId'] = caseStp['params']['deviceId']
@@ -173,13 +124,19 @@ class runCase:
         inspect = r.get(for_key).replace('"', '')
         self.manage.add_global({'inspect': inspect})
 
-    def update_headersDict(self, headersDict, headerPms):
+    def update_headersDict(self, headersDict):
         if isinstance(headersDict, dict):
-            dic = {}
-            headerPm = headerPms.split(',')
-            for i in headerPm:
-                dic[i.split('=')[0]] = i.split('=')[1]
-            headersDict.update(dic)
+            headersDict_copy = headersDict.copy()
+            for key, value in headersDict_copy.items():
+                if "$" in value:
+                    # 'header': '{"Content-Type":"application/json","ps-ticket": "${ticket}"}'
+                    value = re.findall(r'\{(.*?)\}', value)[0]
+                    if value in self.manage.globalDict:
+                        headersDict[key] = value
+                    else:
+                        headersDict.pop(key)
+            self.logger.info(f"处理后的请求头：{headersDict}")
+            return headersDict
         else:
             raise Exception('请求头不是字典格式')
 
@@ -198,7 +155,9 @@ class runCase:
 
 
 if __name__ == '__main__':
-    data = {'用例名称': '上传文件', '测试步骤': 'setp1', '参数': 'imeiNum=1,"imsiNum"=2', '接口名称': 'startup', 'method': 'post',
+    data = {'用例名称': '上传文件', '测试步骤': 'setp1', '参数': 'imeiNum=1,"imsiNum"=2', '接口名称': 'startup',
+            'method': 'post',
             'files': 'imageFile=1614740668406.jpg',
-            '测试对象': 'sit', '接口检查': 'message=操作成功,code=200', '数据库检查': 'default#select username from user$admin',
-            '数据输出': 'accessToken'}
+            '测试对象': 'sit', '接口检查': 'message=操作成功,code=200',
+            '数据库检查': 'default#select username from user$admin',
+            '变量输出': 'accessToken'}

@@ -3,22 +3,50 @@
 @Time : 2021/4/17 下午3:23
 @Author : HeXW
 """
-from util.DbOpen import DbOpen
-from lib.testObj import testObj
+from back.util.DbOpen import DbOpen
 
 
 class Manager:
-    def __init__(self):
+    def __init__(self, logger, test_object):
+
+        self.logger = logger
         # 定义数据库对象
         self.dbObject = DbOpen()
-        # 定义测试对象字典
+
+
+        # 定义测试testObjectDict
         self.testObjectDict = {}
+        testObjectDict_list = eval(test_object.get_value("test_object"))
+        for testObject in testObjectDict_list:
+            if testObject['port']:
+                self.testObjectDict[testObject['name']] = testObject['url'] + ":" + testObject['port']
+            self.testObjectDict[testObject['name']] = testObject['url']
+
+
         # 局部定义全局变量管理信息
         self.globalDict = {}
+        google_variable = eval(test_object.get_value("google_variable"))
+        self.globalDict.update(google_variable)
 
-    def initDbObject(self, conn_name, tstObj: testObj):
+
+        # 数据库配置
+        self.dbconfig = {}
+        dbconfig_list = eval(test_object.get_value("database_config"))
+        for db_config in range(len(dbconfig_list)):
+            if db_config == 0:
+                self.dbconfig['default'] = dbconfig_list[db_config]
+            else:
+                self.dbconfig[db_config['name']] = dbconfig_list[db_config]
+
+        logger.info(f'测试对象：{self.testObjectDict}，全局变量{self.globalDict}，数据库配置{self.dbconfig}')
+
+
+
+
+
+    def initDbObject(self, conn_name):
         try:
-            db_connect = tstObj.get_testObj_dbConfig(conn_name)
+            db_connect = self.dbObject[conn_name]
         except Exception:
             raise ClassManager('数据库别名或者测试环境，未在测试对象信息中找到：{}'.format(conn_name))
         dbType = db_connect['dbType']
@@ -42,15 +70,15 @@ class Manager:
             else:
                 raise ClassManager('数据库检查格式书写有误: {}'.format(sqlCheck))
 
-    def add_tst_obj(self, tstObjName, tstObj):
-        self.testObjectDict[tstObjName] = tstObj
-
-    def add_global(self, dic):
-        self.globalDict.update(dic)
-
-    @property
-    def get_global(self):
-        return self.globalDict
+    # def add_tst_obj(self, tstObjName, tstObj):
+    #     self.testObjectDict[tstObjName] = tstObj
+    #
+    # def add_global(self, dic):
+    #     self.globalDict.update(dic)
+    #
+    # @property
+    # def get_global(self):
+    #     return self.globalDict[]
 
 
 
@@ -64,6 +92,9 @@ class ClassManager(Exception):
 
 
 if __name__ == '__main__':
+
+    #测试对象信息：{'test_object': [{'name': '运维', 'url': 'https://m-gw-test.chocolateswap.com', 'port': '', 'protocol': 'HTTP'}],
+    # 'database_config': [{'type': 'mysql', 'name': 'supper', 'host': '127.0.0.1', 'port': '3306', 'username': 'admin', 'password': '123456'}], 'google_variable': {'username': '12', 'password': '123456798'}}
     data = {'测试步骤': 'setp2', '参数': 'useName=$createRandomChinese,password=int.34', '接口名称': 'login', '测试对象': 'sit',
             '接口检查': 'message=success', 'header': 'headers',
             '数据库检查': '', '数据库别名': 'default', '数据输出': 'message'}

@@ -6,8 +6,8 @@
 import re
 import json
 
-from util import CollectUtil
-from lib.Manager import Manager
+from back.util import CollectUtil
+from back.lib.Manager import Manager
 
 
 class dealParamsError(Exception):
@@ -20,34 +20,34 @@ class dealParamsError(Exception):
 
 
 class dealRequestData:
-    def __init__(self, manage: Manager):
+    def __init__(self, manage: Manager, logger):
         self.manage = manage
+        self.logger = logger
 
-    def get_send_params(self, testData, tstObj, inter, gol_headers):
-        testDada = self.deal_with_case_params(testData, gol_headers)
-        testDada = self.deal_with_files(testDada)
-        roadPass = self.deal_with_roadPass(inter.get('roadpass'))
+    def get_send_params(self, testData):
+        testDada = self.deal_with_case_params(testData)
+        # testDada = self.deal_with_files(testDada)
+        roadPass = self.deal_with_roadPass(testData["url"])
         if roadPass.endswith('/'):
             roadPass = roadPass[:-1]
-        url = tstObj.get_testObj_url(testData['测试对象']) + roadPass
+        url = self.manage.testObjectDict[testDada["测试对象名称"]] + roadPass
         # inter_params = eval(self.deal_with_date(inter.get('params')))
         global false, null, true
         false = False
         true = True
         null = None
-        inter_params = eval(inter.get('params'))
-        param = self.deal_with_inter_params(inter_params)
+        inter_params = testDada['body']
+        param = self.deal_with_inter_params(eval(inter_params))
         # print('接口测试数据::{}'.format(param))
         params = self.up_params(param, testDada['参数'])
-        testDada['params'] = params
+        testDada['body'] = params
         testDada['url'] = url
-        testDada['method'] = inter.get('method')
         # testDada.pop('参数')
         # testData.pop('接口名称')
         # self.manage.globalDict['deviceId'] = testDada['params']['deviceId']
         return testData
 
-    def deal_with_case_params(self, testData, gol_headers):
+    def deal_with_case_params(self, testData):
         if isinstance(testData, dict):
             if testData['参数']:
                 dic = {}
@@ -67,11 +67,9 @@ class dealRequestData:
                                     raise dealParamsError('参数{},在全局变量中找不到'.format(k))
                             dic[input_key] = inputValue
                         else:
-                            if input_value in self.manage.globalDict or input_value in gol_headers:
+                            if input_value in self.manage.globalDict:
                                 if input_value in self.manage.globalDict:
                                     dic[i.split('=')[0]] = self.manage.globalDict[input_value]
-                                else:
-                                    dic[i.split('=')[0]] = gol_headers[input_value]
                             else:
                                 try:
                                     starData = getattr(CollectUtil, input_value)()
@@ -157,7 +155,7 @@ class dealRequestData:
             for t in interParams:
                 self.deal_with_inter_params(t)
         else:
-            print('参数是:{}'.format(interParams))
+            self.logger.info('参数是:{}'.format(interParams))
             raise Exception('接口参数处理异常')
 
         return interParams
