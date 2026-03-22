@@ -5,7 +5,7 @@
 """
 import random, datetime
 import time
-from util import DbOpen
+from back.util import DbOpen
 
 
 def createRandomChinese(chineseLen=3):

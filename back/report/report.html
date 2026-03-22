@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8"/>
     <title>测试报告</title>
-    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
-  <body onLoad="init()">
-    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/>
+</head>
+<body onLoad="init()">
+<script>/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -80,11 +81,11 @@ function addCollapse() {
     const resulttable = find('table#results-table');
     const showhideall = document.createElement('p');
     showhideall.innerHTML = '<a href="javascript:showAllExtras()">显示详情</a> / ' +
-                            '<a href="javascript:hideAllExtras()">隐藏详情</a>';
+        '<a href="javascript:hideAllExtras()">隐藏详情</a>';
     resulttable.parentElement.insertBefore(showhideall, resulttable);
 
     // Add show/hide link to each result
-    findAll('.col-result').forEach(function(elem) {
+    findAll('.col-result').forEach(function (elem) {
         const collapsed = getQueryParameter('collapsed') || 'Passed';
         const extras = elem.parentNode.nextElementSibling;
         const expandcollapse = document.createElement('span');
@@ -98,7 +99,7 @@ function addCollapse() {
         }
         elem.appendChild(expandcollapse);
 
-        elem.addEventListener('click', function(event) {
+        elem.addEventListener('click', function (event) {
             if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
                 showExtras(event.currentTarget);
             } else {
@@ -113,7 +114,7 @@ function getQueryParameter(name) {
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
-function init () { // eslint-disable-line no-unused-vars
+function init() { // eslint-disable-line no-unused-vars
     resetSortHeaders();
 
     addCollapse();
@@ -122,19 +123,18 @@ function init () { // eslint-disable-line no-unused-vars
 
     sortColumn(find('.initial-sort'));
 
-    findAll('.sortable').forEach(function(elem) {
+    findAll('.sortable').forEach(function (elem) {
         elem.addEventListener('click',
-            function() {
+            function () {
                 sortColumn(elem);
             }, false);
     });
     // 修改用例报告显示的用例名称 add by hex炜
     var case_name_td = document.getElementsByClassName("col-name")
-    for(var i = 0; i < case_name_td.length; i++)
-        try{
+    for (var i = 0; i < case_name_td.length; i++)
+        try {
             case_name_td[i].innerText = case_name_td[i].innerText.split("\[")[1].split("\]")[0];
-        }
-        catch(err){
+        } catch (err) {
             // 如果表格中没有[]会抛异常，如果抛异常我就显示null，如果你想显示别的东西自己改吧，因为通常只要我们使用参数化就有[]显示
             case_name_td[i].innerText = "null";
         }
@@ -152,18 +152,18 @@ function sortTable(clicked, keyFunc) {
     const parent = document.createElement('table');
     parent.id = 'results-table';
     parent.appendChild(thead);
-    sortedRows.forEach(function(elem) {
+    sortedRows.forEach(function (elem) {
         parent.appendChild(elem);
     });
     document.getElementsByTagName('BODY')[0].appendChild(parent);
 }
 
 function sort(items, keyFunc, reversed) {
-    const sortArray = items.map(function(item, i) {
+    const sortArray = items.map(function (item, i) {
         return [keyFunc(item), i];
     });
 
-    sortArray.sort(function(a, b) {
+    sortArray.sort(function (a, b) {
         const keyA = a[0];
         const keyB = b[0];
 
@@ -176,27 +176,27 @@ function sort(items, keyFunc, reversed) {
         }
     });
 
-    return sortArray.map(function(item) {
+    return sortArray.map(function (item) {
         const index = item[1];
         return items[index];
     });
 }
 
 function keyAlpha(colIndex) {
-    return function(elem) {
+    return function (elem) {
         return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
     };
 }
 
 function keyLink(colIndex) {
-    return function(elem) {
+    return function (elem) {
         const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
         return dataCell == null ? '' : dataCell.innerText.toLowerCase();
     };
 }
 
 function keyResult(colIndex) {
-    return function(elem) {
+    return function (elem) {
         const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
             'Skipped', 'Passed'];
         return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
@@ -204,10 +204,10 @@ function keyResult(colIndex) {
 }
 
 function resetSortHeaders() {
-    findAll('.sort-icon').forEach(function(elem) {
+    findAll('.sort-icon').forEach(function (elem) {
         elem.parentNode.removeChild(elem);
     });
-    findAll('.sortable').forEach(function(elem) {
+    findAll('.sortable').forEach(function (elem) {
         const icon = document.createElement('div');
         icon.className = 'sort-icon';
         icon.textContent = 'vvv';
@@ -242,7 +242,7 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
     const classOutcome = outcome + ' results-table-row';
     const outcomeRows = document.getElementsByClassName(classOutcome);
 
-    for(let i = 0; i < outcomeRows.length; i++){
+    for (let i = 0; i < outcomeRows.length; i++) {
         outcomeRows[i].hidden = !elem.checked;
     }
 
@@ -252,137 +252,262 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
     notFoundMessage.hidden = !allRowsHidden;
 }
 </script>
-    <h1>report.html</h1>
-    <p>生成报告时间：2022-11-02 -- 17:18:30</p>
-    <h2>测试环境</h2>
-    <table id="environment">
-      <tr>
+<h1>report.html</h1>
+<p>生成报告时间：2022-11-02 -- 17:18:30</p>
+<h2>测试环境</h2>
+<table id="environment">
+    <tr>
         <td>Platform</td>
-        <td>Darwin-21.2.0-x86_64-i386-64bit</td></tr>
-      <tr>
+        <td>Darwin-21.2.0-x86_64-i386-64bit</td>
+    </tr>
+    <tr>
         <td>接口地址</td>
-        <td><a href="https://98du.yuque.com/98du/puskgo/hn9szg" target="_blank">https://98du.yuque.com/98du/puskgo/hn9szg</a></td></tr>
-      <tr>
+        <td><a href="https://98du.yuque.com/98du/puskgo/hn9szg" target="_blank">https://98du.yuque.com/98du/puskgo/hn9szg</a>
+        </td>
+    </tr>
+    <tr>
         <td>测试环境</td>
-        <td><a href="http://localdev.xytask.uheixia.com" target="_blank">http://localdev.xytask.uheixia.com</a></td></tr>
-      <tr>
+        <td><a href="http://localdev.xytask.uheixia.com" target="_blank">http://localdev.xytask.uheixia.com</a></td>
+    </tr>
+    <tr>
         <td>项目名称</td>
-        <td>商品、供应链、运营</td></tr></table>
-    <h2>用例统计</h2>
-    <p>所属部门: NSY_测试部</p>
-    <p>开发维护人员: 测试组成员</p>
-    <p>执行了3个测试用例, 历时:2.08秒 . </p>
-    <p class="filter" hidden="true">(取消)勾选复选框, 以便筛选测试结果</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">3 通过</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 跳过</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">0 失败</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 错误</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 预期失败</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 预期通过</span>
-    <h2>测试结果</h2>
-    <table id="results-table">
-      <thead id="results-table-head">
-        <tr>
-          <th class="sortable result initial-sort" col="result">通过/失败</th>
-          <th class="sortable" col="name">用例</th>
-          <th class="sortable numeric" col="duration">耗时</th></tr>
-        <tr hidden="true" id="not-found-message">
-          <th colspan="3">无测试结果, 试着选择其他测试结果条件</th></tr></thead>
-      <tbody class="passed results-table-row">
-        <tr>
-          <td class="col-result">Passed</td>
-          <td class="col-name">testcase/test_start.py::test_get_eve</td>
-          <td class="col-duration">0.00</td></tr>
-        <tr>
-          <td class="extra" colspan="3">
+        <td>商品、供应链、运营</td>
+    </tr>
+</table>
+<h2>用例统计</h2>
+<p>所属部门: NSY_测试部</p>
+<p>开发维护人员: 测试组成员</p>
+<p>执行了3个测试用例, 历时:2.08秒 . </p>
+<p class="filter" hidden="true">(取消)勾选复选框, 以便筛选测试结果</p><input checked="true" class="filter" data-test-result="passed"
+                                                              hidden="true" name="filter_checkbox"
+                                                              onChange="filterTable(this)" type="checkbox"/><span
+        class="passed">3 通过</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true"
+                                           hidden="true" name="filter_checkbox" onChange="filterTable(this)"
+                                           type="checkbox"/><span class="skipped">0 跳过</span>, <input checked="true"
+                                                                                                      class="filter"
+                                                                                                      data-test-result="failed"
+                                                                                                      disabled="true"
+                                                                                                      hidden="true"
+                                                                                                      name="filter_checkbox"
+                                                                                                      onChange="filterTable(this)"
+                                                                                                      type="checkbox"/><span
+        class="failed">0 失败</span>, <input checked="true" class="filter" data-test-result="error" disabled="true"
+                                           hidden="true" name="filter_checkbox" onChange="filterTable(this)"
+                                           type="checkbox"/><span class="error">0 错误</span>, <input checked="true"
+                                                                                                    class="filter"
+                                                                                                    data-test-result="xfailed"
+                                                                                                    disabled="true"
+                                                                                                    hidden="true"
+                                                                                                    name="filter_checkbox"
+                                                                                                    onChange="filterTable(this)"
+                                                                                                    type="checkbox"/><span
+        class="xfailed">0 预期失败</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true"
+                                              hidden="true" name="filter_checkbox" onChange="filterTable(this)"
+                                              type="checkbox"/><span class="xpassed">0 预期通过</span>
+<h2>测试结果</h2>
+<table id="results-table">
+    <thead id="results-table-head">
+    <tr>
+        <th class="sortable result initial-sort" col="result">通过/失败</th>
+        <th class="sortable" col="name">用例</th>
+        <th class="sortable numeric" col="duration">耗时</th>
+    </tr>
+    <tr hidden="true" id="not-found-message">
+        <th colspan="3">无测试结果, 试着选择其他测试结果条件</th>
+    </tr>
+    </thead>
+    <tbody class="passed results-table-row">
+    <tr>
+        <td class="col-result">Passed</td>
+        <td class="col-name">testcase/test_start.py::test_get_eve</td>
+        <td class="col-duration">0.00</td>
+    </tr>
+    <tr>
+        <td class="extra" colspan="3">
             <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>test
-<br/></div></td></tr></tbody>
-      <tbody class="passed results-table-row">
-        <tr>
-          <td class="col-result">Passed</td>
-          <td class="col-name">testcase/test_start.py::TestMain::test_main[测试用例名称：获取token；---用例描述：获取graphId]</td>
-          <td class="col-duration">0.73</td></tr>
-        <tr>
-          <td class="extra" colspan="3">
+                <br/></div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody class="passed results-table-row">
+    <tr>
+        <td class="col-result">Passed</td>
+        <td class="col-name">testcase/test_start.py::TestMain::test_main[测试用例名称：获取token；---用例描述：获取graphId]</td>
+        <td class="col-duration">0.73</td>
+    </tr>
+    <tr>
+        <td class="extra" colspan="3">
             <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
-开始执行测试用例：获取token的step1，获取graphId
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step1&#x27;, &#x27;编号&#x27;: 0.0, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;获取graphId&#x27;, &#x27;参数&#x27;: &#x27;&#x27;, &#x27;接口名称&#x27;: &#x27;graph&#x27;, &#x27;测试对象&#x27;: &#x27;login&#x27;, &#x27;接口检查&#x27;: &#x27;status=1&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;graphId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headers&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：https://test-sso.dearlovertech.com/captcha/graph
-请求头：{&#x27;Content-Type&#x27;: &#x27;application/json&#x27;}
-请求参数：{}
-请求成功返回参数：{&quot;graphUrl&quot;:&quot;/captcha/graph/print?graphId=b090a950-f75b-4b3e-b414-5d2cb8c3fd79&quot;,&quot;graphId&quot;:&quot;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&quot;,&quot;ttl&quot;:300,&quot;status&quot;:1}
-接口实际返回值：{&#x27;status&#x27;: 1}
-期望值:status=1
-效验通过，期望值：1=实际值:1
-全局变量设置完成：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;graphId&#x27;: &#x27;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&#x27;}
-=================================================================
-开始执行测试用例：获取token的step2，获取验证码
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step2&#x27;, &#x27;编号&#x27;: &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;redis&#x27;, &#x27;描述&#x27;: &#x27;获取验证码&#x27;, &#x27;参数&#x27;: 0.0, &#x27;接口名称&#x27;: &#x27;&#x27;, &#x27;测试对象&#x27;: &#x27;&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;inspect&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-=================================================================
-开始执行测试用例：获取token的step3，登陆获取sessionID
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step3&#x27;, &#x27;编号&#x27;: &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;登陆获取sessionID&#x27;, &#x27;参数&#x27;: &#x27;graphId=$graphId,username=admin,password=123,verificationCode=$inspect&#x27;, &#x27;接口名称&#x27;: &#x27;security_check&#x27;, &#x27;测试对象&#x27;: &#x27;login&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;erpHeader&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：https://test-sso.dearlovertech.com/security_check
-请求头：{&#x27;Content-Type&#x27;: &#x27;application/x-www-form-urlencoded&#x27;}
-请求参数：{&#x27;graphId&#x27;: &#x27;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&#x27;, &#x27;username&#x27;: &#x27;admin&#x27;, &#x27;password&#x27;: &#x27;123&#x27;, &#x27;verificationCode&#x27;: &#x27;bJRe&#x27;}
-请求成功返回参数：
-=================================================================
-开始执行测试用例：获取token的step4，授权
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step4&#x27;, &#x27;编号&#x27;: &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;授权&#x27;, &#x27;参数&#x27;: &#x27;client_id=$client_id&#x27;, &#x27;接口名称&#x27;: &#x27;authorize&#x27;, &#x27;测试对象&#x27;: &#x27;login&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;header&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：https://test-sso.dearlovertech.com/oauth2/authorize
-请求头：{}
-请求参数：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;response_type&#x27;: &#x27;code&#x27;, &#x27;state&#x27;: &#x27;STATE&#x27;, &#x27;redirect_uri&#x27;: &#x27;https://test-scm.dearlovertech.com/login?redirect=/dashboard&#x27;}
-请求成功返回参数：
-=================================================================
-开始执行测试用例：获取token的step5，get_token
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step5&#x27;, &#x27;编号&#x27;: &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;get_token&#x27;, &#x27;参数&#x27;: &#x27;code=$SESSION,clientId=$client_id&#x27;, &#x27;接口名称&#x27;: &#x27;get-token&#x27;, &#x27;测试对象&#x27;: &#x27;supplier&#x27;, &#x27;接口检查&#x27;: &#x27;successful=true&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;sessionToken&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;header&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：https://test-api-erp.dearlovertech.com/oauth2/get-token
-请求头：{}
-请求参数：{&#x27;clientId&#x27;: &#x27;scm-platform-test&#x27;, &#x27;code&#x27;: &#x27;NTkxMTlhY2EtMmYzZC00ZWVjLWE3YjYtMDE3NTE4NDAwMDJk&#x27;}
-请求成功返回参数：{&quot;sessionToken&quot;:&quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoic2NtLXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiI2Y2NlNGNiMC0yOWUyLTRkZWQtYTBkYi0wNGU4N2FmNjRkNjEiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.lPjrm1qMe_MsIn3Nf2gu2Vn_berXnFqC_eNSDGxOUIDuykgumQqHNO_4QKA4W5lUd6V7dSc2JI6rWo_7s3a7Q2iBCvciGnqeBrh-A5WG2qtYPTDDm_cXByavmt3MAHVLjdGh8p1WDGyezlbOjvioC8qgwg2JFJOXIPPREZ8sj-khAhqAVVceavDLTeBpjXIwODoKwzMc9gHHGKz_DRAKi3XdEyrEcmwoB_uqsDnKXzM_-1iByThHXqL5hqhHcccFrI1MUPbjGgMzM3cBKFpVOrmmAZGpcTibvIup3OY8Dk8NdRU5ebBsAVZPXzUd2pHkKQkMJWDsMcYAmXBKchWIHQ&quot;,&quot;role&quot;:&quot;超级管理员&quot;,&quot;name&quot;:&quot;&quot;,&quot;dutyName&quot;:&quot;&quot;,&quot;successful&quot;:&quot;true&quot;,&quot;message&quot;:&quot;null&quot;,&quot;resultCode&quot;:&quot;null&quot;,&quot;userName&quot;:&quot;admin&quot;,&quot;mobilePhone&quot;:&quot;null&quot;}
-接口实际返回值：{&#x27;successful&#x27;: &#x27;true&#x27;}
-期望值:successful=true
-效验通过，期望值：true=实际值:true
-全局变量设置完成：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;graphId&#x27;: &#x27;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&#x27;, &#x27;inspect&#x27;: &#x27;bJRe&#x27;, &#x27;sessionToken&#x27;: &#x27;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoic2NtLXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiI2Y2NlNGNiMC0yOWUyLTRkZWQtYTBkYi0wNGU4N2FmNjRkNjEiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.lPjrm1qMe_MsIn3Nf2gu2Vn_berXnFqC_eNSDGxOUIDuykgumQqHNO_4QKA4W5lUd6V7dSc2JI6rWo_7s3a7Q2iBCvciGnqeBrh-A5WG2qtYPTDDm_cXByavmt3MAHVLjdGh8p1WDGyezlbOjvioC8qgwg2JFJOXIPPREZ8sj-khAhqAVVceavDLTeBpjXIwODoKwzMc9gHHGKz_DRAKi3XdEyrEcmwoB_uqsDnKXzM_-1iByThHXqL5hqhHcccFrI1MUPbjGgMzM3cBKFpVOrmmAZGpcTibvIup3OY8Dk8NdRU5ebBsAVZPXzUd2pHkKQkMJWDsMcYAmXBKchWIHQ&#x27;}
-=================================================================
-开始执行测试用例：获取token的step6，get_cookies
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step6&#x27;, &#x27;编号&#x27;: &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;get_cookies&#x27;, &#x27;参数&#x27;: &#x27;code=$SESSION&#x27;, &#x27;接口名称&#x27;: &#x27;LoginJWT&#x27;, &#x27;测试对象&#x27;: &#x27;erp&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;header&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：http://test-xsy.dearlovertech.com/LoginJWT.aspx
-请求头：{}
-请求参数：{&#x27;action&#x27;: &#x27;ReBack&#x27;, &#x27;code&#x27;: &#x27;NTkxMTlhY2EtMmYzZC00ZWVjLWE3YjYtMDE3NTE4NDAwMDJk&#x27;, &#x27;state&#x27;: &#x27;STATE&#x27;}
-请求成功返回参数：&lt;html&gt;&lt;head&gt;&lt;title&gt;Object moved&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
-&lt;h2&gt;Object moved to &lt;a href=&quot;/loginJwt.aspx?action=Analyse&amp;amp;t=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoieHN5LXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiIzMDlmZjMxMy0zMjk4LTQ3YjctYmRmNi0zOTUwYTlmNmRmZmUiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.HJD6moBa_wKB9mewIUFZR9A-fxWhxDN8SBobv8VMHgmdSqNmIsXfQXbUJos5laMsXM7sJFeRJsgQ6u197bWbnPYYmv3sF0ghW94NQcSo7Ma4OzFGYRgo7QOF4y1gSgYiPs7IX-iv8RP-CNEh-yiTbW0ot7XMmCnVzy1xiqa7OoKpiFrAykDKXnwQnj6KsYDs2iEqtjPO35HOd1MBExpvLFynRgXX0YQludEaq5TMLmHda3O_Cw6Uzc_FxLhrk1Jd619muwWzDupNiFBeVOsad5Sv9j1fYDbmMqDS7rU33o9gx5QEIpDS6JuPsSmA-xZIDSxj-bzwWOGtiyl8Bz_UcA&quot;&gt;here&lt;/a&gt;.&lt;/h2&gt;
-&lt;/body&gt;&lt;/html&gt;
+                开始执行测试用例：获取token的step1，获取graphId
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step1&#x27;, &#x27;编号&#x27;: 0.0,
+                &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;获取graphId&#x27;, &#x27;参数&#x27;: &#x27;&#x27;,
+                &#x27;接口名称&#x27;: &#x27;graph&#x27;, &#x27;测试对象&#x27;: &#x27;login&#x27;, &#x27;接口检查&#x27;: &#x27;status=1&#x27;,
+                &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;graphId&#x27;, &#x27;files&#x27;: &#x27;&#x27;,
+                &#x27;请求头&#x27;: &#x27;headers&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
+                请求url：https://test-sso.dearlovertech.com/captcha/graph
+                请求头：{&#x27;Content-Type&#x27;: &#x27;application/json&#x27;}
+                请求参数：{}
+                请求成功返回参数：{&quot;graphUrl&quot;:&quot;/captcha/graph/print?graphId=b090a950-f75b-4b3e-b414-5d2cb8c3fd79&quot;,&quot;graphId&quot;:&quot;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&quot;,&quot;ttl&quot;:300,&quot;status&quot;:1}
+                接口实际返回值：{&#x27;status&#x27;: 1}
+                期望值:status=1
+                效验通过，期望值：1=实际值:1
+                全局变量设置完成：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;graphId&#x27;: &#x27;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&#x27;}
+                =================================================================
+                开始执行测试用例：获取token的step2，获取验证码
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step2&#x27;, &#x27;编号&#x27;:
+                &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;redis&#x27;, &#x27;描述&#x27;: &#x27;获取验证码&#x27;, &#x27;参数&#x27;:
+                0.0, &#x27;接口名称&#x27;: &#x27;&#x27;, &#x27;测试对象&#x27;: &#x27;&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;,
+                &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;inspect&#x27;, &#x27;files&#x27;: &#x27;&#x27;,
+                &#x27;请求头&#x27;: &#x27;&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
+                =================================================================
+                开始执行测试用例：获取token的step3，登陆获取sessionID
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step3&#x27;, &#x27;编号&#x27;:
+                &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;登陆获取sessionID&#x27;, &#x27;参数&#x27;:
+                &#x27;graphId=$graphId,username=admin,password=123,verificationCode=$inspect&#x27;, &#x27;接口名称&#x27;:
+                &#x27;security_check&#x27;, &#x27;测试对象&#x27;: &#x27;login&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;:
+                &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;erpHeader&#x27;,
+                &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
+                请求url：https://test-sso.dearlovertech.com/security_check
+                请求头：{&#x27;Content-Type&#x27;: &#x27;application/x-www-form-urlencoded&#x27;}
+                请求参数：{&#x27;graphId&#x27;: &#x27;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&#x27;, &#x27;username&#x27;:
+                &#x27;admin&#x27;, &#x27;password&#x27;: &#x27;123&#x27;, &#x27;verificationCode&#x27;: &#x27;bJRe&#x27;}
+                请求成功返回参数：
+                =================================================================
+                开始执行测试用例：获取token的step4，授权
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step4&#x27;, &#x27;编号&#x27;:
+                &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;授权&#x27;, &#x27;参数&#x27;: &#x27;client_id=$client_id&#x27;,
+                &#x27;接口名称&#x27;: &#x27;authorize&#x27;, &#x27;测试对象&#x27;: &#x27;login&#x27;, &#x27;接口检查&#x27;: &#x27;&#x27;,
+                &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;:
+                &#x27;header&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
+                请求url：https://test-sso.dearlovertech.com/oauth2/authorize
+                请求头：{}
+                请求参数：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;response_type&#x27;: &#x27;code&#x27;,
+                &#x27;state&#x27;: &#x27;STATE&#x27;, &#x27;redirect_uri&#x27;: &#x27;https://test-scm.dearlovertech.com/login?redirect=/dashboard&#x27;}
+                请求成功返回参数：
+                =================================================================
+                开始执行测试用例：获取token的step5，get_token
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step5&#x27;, &#x27;编号&#x27;:
+                &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;get_token&#x27;, &#x27;参数&#x27;:
+                &#x27;code=$SESSION,clientId=$client_id&#x27;, &#x27;接口名称&#x27;: &#x27;get-token&#x27;, &#x27;测试对象&#x27;:
+                &#x27;supplier&#x27;, &#x27;接口检查&#x27;: &#x27;successful=true&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;,
+                &#x27;数据输出&#x27;: &#x27;sessionToken&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;header&#x27;,
+                &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
+                请求url：https://test-api-erp.dearlovertech.com/oauth2/get-token
+                请求头：{}
+                请求参数：{&#x27;clientId&#x27;: &#x27;scm-platform-test&#x27;, &#x27;code&#x27;: &#x27;NTkxMTlhY2EtMmYzZC00ZWVjLWE3YjYtMDE3NTE4NDAwMDJk&#x27;}
+                请求成功返回参数：{&quot;sessionToken&quot;:&quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoic2NtLXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiI2Y2NlNGNiMC0yOWUyLTRkZWQtYTBkYi0wNGU4N2FmNjRkNjEiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.lPjrm1qMe_MsIn3Nf2gu2Vn_berXnFqC_eNSDGxOUIDuykgumQqHNO_4QKA4W5lUd6V7dSc2JI6rWo_7s3a7Q2iBCvciGnqeBrh-A5WG2qtYPTDDm_cXByavmt3MAHVLjdGh8p1WDGyezlbOjvioC8qgwg2JFJOXIPPREZ8sj-khAhqAVVceavDLTeBpjXIwODoKwzMc9gHHGKz_DRAKi3XdEyrEcmwoB_uqsDnKXzM_-1iByThHXqL5hqhHcccFrI1MUPbjGgMzM3cBKFpVOrmmAZGpcTibvIup3OY8Dk8NdRU5ebBsAVZPXzUd2pHkKQkMJWDsMcYAmXBKchWIHQ&quot;,&quot;role&quot;:&quot;超级管理员&quot;,&quot;name&quot;:&quot;&quot;,&quot;dutyName&quot;:&quot;&quot;,&quot;successful&quot;:&quot;true&quot;,&quot;message&quot;:&quot;null&quot;,&quot;resultCode&quot;:&quot;null&quot;,&quot;userName&quot;:&quot;admin&quot;,&quot;mobilePhone&quot;:&quot;null&quot;}
+                接口实际返回值：{&#x27;successful&#x27;: &#x27;true&#x27;}
+                期望值:successful=true
+                效验通过，期望值：true=实际值:true
+                全局变量设置完成：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;graphId&#x27;: &#x27;b090a950-f75b-4b3e-b414-5d2cb8c3fd79&#x27;,
+                &#x27;inspect&#x27;: &#x27;bJRe&#x27;, &#x27;sessionToken&#x27;: &#x27;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoic2NtLXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiI2Y2NlNGNiMC0yOWUyLTRkZWQtYTBkYi0wNGU4N2FmNjRkNjEiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.lPjrm1qMe_MsIn3Nf2gu2Vn_berXnFqC_eNSDGxOUIDuykgumQqHNO_4QKA4W5lUd6V7dSc2JI6rWo_7s3a7Q2iBCvciGnqeBrh-A5WG2qtYPTDDm_cXByavmt3MAHVLjdGh8p1WDGyezlbOjvioC8qgwg2JFJOXIPPREZ8sj-khAhqAVVceavDLTeBpjXIwODoKwzMc9gHHGKz_DRAKi3XdEyrEcmwoB_uqsDnKXzM_-1iByThHXqL5hqhHcccFrI1MUPbjGgMzM3cBKFpVOrmmAZGpcTibvIup3OY8Dk8NdRU5ebBsAVZPXzUd2pHkKQkMJWDsMcYAmXBKchWIHQ&#x27;}
+                =================================================================
+                开始执行测试用例：获取token的step6，get_cookies
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;获取token&#x27;, &#x27;测试步骤&#x27;: &#x27;step6&#x27;, &#x27;编号&#x27;:
+                &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;get_cookies&#x27;, &#x27;参数&#x27;:
+                &#x27;code=$SESSION&#x27;, &#x27;接口名称&#x27;: &#x27;LoginJWT&#x27;, &#x27;测试对象&#x27;: &#x27;erp&#x27;,
+                &#x27;接口检查&#x27;: &#x27;&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;:
+                &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;header&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
+                请求url：http://test-xsy.dearlovertech.com/LoginJWT.aspx
+                请求头：{}
+                请求参数：{&#x27;action&#x27;: &#x27;ReBack&#x27;, &#x27;code&#x27;: &#x27;NTkxMTlhY2EtMmYzZC00ZWVjLWE3YjYtMDE3NTE4NDAwMDJk&#x27;,
+                &#x27;state&#x27;: &#x27;STATE&#x27;}
+                请求成功返回参数：&lt;html&gt;&lt;head&gt;&lt;title&gt;Object moved&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+                &lt;h2&gt;Object moved to &lt;a href=&quot;/loginJwt.aspx?action=Analyse&amp;amp;t=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoieHN5LXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiIzMDlmZjMxMy0zMjk4LTQ3YjctYmRmNi0zOTUwYTlmNmRmZmUiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.HJD6moBa_wKB9mewIUFZR9A-fxWhxDN8SBobv8VMHgmdSqNmIsXfQXbUJos5laMsXM7sJFeRJsgQ6u197bWbnPYYmv3sF0ghW94NQcSo7Ma4OzFGYRgo7QOF4y1gSgYiPs7IX-iv8RP-CNEh-yiTbW0ot7XMmCnVzy1xiqa7OoKpiFrAykDKXnwQnj6KsYDs2iEqtjPO35HOd1MBExpvLFynRgXX0YQludEaq5TMLmHda3O_Cw6Uzc_FxLhrk1Jd619muwWzDupNiFBeVOsad5Sv9j1fYDbmMqDS7rU33o9gx5QEIpDS6JuPsSmA-xZIDSxj-bzwWOGtiyl8Bz_UcA&quot;&gt;here&lt;/a&gt;.&lt;/h2&gt;
+                &lt;/body&gt;&lt;/html&gt;
 
-<br/></div></td></tr></tbody>
-      <tbody class="passed results-table-row">
-        <tr>
-          <td class="col-result">Passed</td>
-          <td class="col-name">testcase/test_start.py::TestMain::test_main[测试用例名称：倒入申请单；---用例描述：部门申请]</td>
-          <td class="col-duration">0.90</td></tr>
-        <tr>
-          <td class="extra" colspan="3">
+                <br/></div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody class="passed results-table-row">
+    <tr>
+        <td class="col-result">Passed</td>
+        <td class="col-name">testcase/test_start.py::TestMain::test_main[测试用例名称：倒入申请单；---用例描述：部门申请]</td>
+        <td class="col-duration">0.90</td>
+    </tr>
+    <tr>
+        <td class="extra" colspan="3">
             <div class="log"> ------------------------------Captured stdout call------------------------------ <br/>=================================================================
-开始执行测试用例：倒入申请单的step1，部门申请
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;倒入申请单&#x27;, &#x27;测试步骤&#x27;: &#x27;step1&#x27;, &#x27;编号&#x27;: 1.0, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;部门申请&#x27;, &#x27;参数&#x27;: &#x27;applyType=4&#x27;, &#x27;接口名称&#x27;: &#x27;add_apply&#x27;, &#x27;测试对象&#x27;: &#x27;scm&#x27;, &#x27;接口检查&#x27;: &#x27;Status=6&#x27;, &#x27;数据库检查&#x27;: &#x27;SELECT apply_type from nsy_scm.purchase_apply where apply_no = $OrderApplyNo|4,\nselect apply_item_id from nsy_scm.purchase_apply_item where apply_id = $OrderApplyId|$OrderApplyItemIds&#x27;, &#x27;数据输出&#x27;: &#x27;OrderApplyId,OrderApplyNo,applyQty,applyType,businessType,applyName,location,spaceId,spaceName,erpProductId,spu,erpSpecId,skc,skuSize,sku,supplierId&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headers&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：https://test-api-erp-gateway.dearlovertech.com/scm/purchase/erp/apply/add-apply
-请求头：{&#x27;Content-Type&#x27;: &#x27;application/json&#x27;, &#x27;authorization&#x27;: &#x27;Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoic2NtLXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiI2Y2NlNGNiMC0yOWUyLTRkZWQtYTBkYi0wNGU4N2FmNjRkNjEiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.lPjrm1qMe_MsIn3Nf2gu2Vn_berXnFqC_eNSDGxOUIDuykgumQqHNO_4QKA4W5lUd6V7dSc2JI6rWo_7s3a7Q2iBCvciGnqeBrh-A5WG2qtYPTDDm_cXByavmt3MAHVLjdGh8p1WDGyezlbOjvioC8qgwg2JFJOXIPPREZ8sj-khAhqAVVceavDLTeBpjXIwODoKwzMc9gHHGKz_DRAKi3XdEyrEcmwoB_uqsDnKXzM_-1iByThHXqL5hqhHcccFrI1MUPbjGgMzM3cBKFpVOrmmAZGpcTibvIup3OY8Dk8NdRU5ebBsAVZPXzUd2pHkKQkMJWDsMcYAmXBKchWIHQ&#x27;}
-请求参数：{&#x27;userName&#x27;: &#x27;admin&#x27;, &#x27;orderApply&#x27;: {&#x27;applyType&#x27;: &#x27;4&#x27;, &#x27;status&#x27;: 6, &#x27;businessType&#x27;: &#x27;B2C&#x27;, &#x27;groupId&#x27;: 0, &#x27;groupName&#x27;: &#x27;&#x27;, &#x27;storeId&#x27;: 0, &#x27;storeName&#x27;: &#x27;&#x27;, &#x27;applyName&#x27;: &#x27;b2b&#x27;, &#x27;applierUserCode&#x27;: &#x27;admin&#x27;, &#x27;location&#x27;: &#x27;QUANZHOU&#x27;, &#x27;auditor&#x27;: &#x27;&#x27;, &#x27;auditDate&#x27;: &#x27;&#x27;, &#x27;reviewBy&#x27;: &#x27;&#x27;, &#x27;reviewDate&#x27;: &#x27;&#x27;, &#x27;reviewFailedReason&#x27;: &#x27;&#x27;, &#x27;containCancelSecondDispose&#x27;: 0, &#x27;purchaseRemark&#x27;: &#x27;&#x27;, &#x27;applyNo&#x27;: &#x27;&#x27;}, &#x27;orderApplyItemList&#x27;: [{&#x27;applyId&#x27;: 0, &#x27;spaceId&#x27;: 1, &#x27;spaceName&#x27;: &#x27;新时颖主仓库&#x27;, &#x27;status&#x27;: 6, &#x27;supplierId&#x27;: 2, &#x27;erpProductId&#x27;: 35220, &#x27;spu&#x27;: &#x27;LC0604005&#x27;, &#x27;erpSpecId&#x27;: 133615, &#x27;skc&#x27;: &#x27;LC0604005-5&#x27;, &#x27;sku&#x27;: &#x27;LC0604005-5-S&#x27;, &#x27;skuSize&#x27;: &#x27;S&#x27;, &#x27;expectedArrivalDate&#x27;: &#x27;2022-11-07&#x27;, &#x27;applyQty&#x27;: 1, &#x27;tid&#x27;: &#x27;&#x27;, &#x27;saleMonth&#x27;: &#x27;&#x27;, &#x27;attributeNames&#x27;: &#x27;&#x27;, &#x27;devLog&#x27;: &#x27;&#x27;, &#x27;remark&#x27;: &#x27;测试-&#x27;, &#x27;location&#x27;: &#x27;QUANZHOU&#x27;, &#x27;newestExpectDeliveryDate&#x27;: &#x27;&#x27;, &#x27;estimatedDeliveryDate&#x27;: &#x27;&#x27;, &#x27;sellerSku&#x27;: &#x27;&#x27;, &#x27;sellerBarCode&#x27;: &#x27;&#x27;, &#x27;handleDepartmentId&#x27;: 0, &#x27;fifoQty&#x27;: 0, &#x27;auditorUserCode&#x27;: &#x27;&#x27;, &#x27;auditDate&#x27;: &#x27;&#x27;, &#x27;useBaseSkuStock&#x27;: 0, &#x27;customizedTid&#x27;: &#x27;&#x27;, &#x27;useCompanyStock&#x27;: 0, &#x27;applyReceivedQty&#x27;: 0, &#x27;usePurchaseQty&#x27;: 0}]}
-请求成功返回参数：{&quot;groupName&quot;:&quot;&quot;,&quot;storeName&quot;:&quot;&quot;,&quot;OrderApplyId&quot;:68605,&quot;OrderApplyNo&quot;:&quot;PR2211021718293668&quot;,&quot;SourceType&quot;:4,&quot;Status&quot;:6,&quot;BusinessType&quot;:&quot;B2C&quot;,&quot;GroupId&quot;:0,&quot;disAInfoID&quot;:0,&quot;ApplyBy&quot;:&quot;b2b&quot;,&quot;DeliveryLocation&quot;:&quot;QUANZHOU&quot;,&quot;CreateDate&quot;:&quot;2022-11-02 17:18:29&quot;,&quot;UpdateDate&quot;:&quot;2022-11-02 17:18:29&quot;,&quot;UpdateBy&quot;:&quot;admin&quot;,&quot;CreateBy&quot;:&quot;admin&quot;,&quot;Applier&quot;:&quot;admin&quot;}
-接口实际返回值：{&#x27;Status&#x27;: 6}
-期望值:Status=6
-效验通过，期望值：6=实际值:6
-全局变量设置完成：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;applyType&#x27;: &#x27;4&#x27;, &#x27;businessType&#x27;: &#x27;B2C&#x27;, &#x27;applyName&#x27;: &#x27;b2b&#x27;, &#x27;location&#x27;: &#x27;QUANZHOU&#x27;, &#x27;spaceId&#x27;: 1, &#x27;spaceName&#x27;: &#x27;新时颖主仓库&#x27;, &#x27;supplierId&#x27;: 2, &#x27;erpProductId&#x27;: 35220, &#x27;spu&#x27;: &#x27;LC0604005&#x27;, &#x27;erpSpecId&#x27;: 133615, &#x27;skc&#x27;: &#x27;LC0604005-5&#x27;, &#x27;sku&#x27;: &#x27;LC0604005-5-S&#x27;, &#x27;skuSize&#x27;: &#x27;S&#x27;, &#x27;applyQty&#x27;: 1, &#x27;OrderApplyId&#x27;: 68605, &#x27;OrderApplyNo&#x27;: &#x27;PR2211021718293668&#x27;}
-数据库对象创建成功
-开始执行sql：SELECT apply_type from nsy_scm.purchase_apply where apply_no = &#x27;PR2211021718293668&#x27;
-数据库别名已在配置当中，直接返回
-数据库赋值完成，已经添加：{&#x27;OrderApplyItemIds&#x27;: 701062}到全局变量
-=================================================================
-开始执行测试用例：倒入申请单的step2，提交申请单
-测试步骤信息：{&#x27;用例名称&#x27;: &#x27;倒入申请单&#x27;, &#x27;测试步骤&#x27;: &#x27;step2&#x27;, &#x27;编号&#x27;: &#x27;&#x27;, &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;提交申请单&#x27;, &#x27;参数&#x27;: &#x27;&#x27;, &#x27;接口名称&#x27;: &#x27;OrderApplyController&#x27;, &#x27;测试对象&#x27;: &#x27;erp&#x27;, &#x27;接口检查&#x27;: &#x27;StatusCode=200&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;erpHeader&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;: &#x27;&#x27;}
-请求url：http://test-xsy.dearlovertech.com/Mvc/Controller/PurchaseManage/OrderApplyController.aspx
-请求头：{&#x27;Content-Type&#x27;: &#x27;application/x-www-form-urlencoded&#x27;}
-请求参数：{&#x27;itemList&#x27;: [{&#x27;Key&#x27;: &#x27;LC0604005-5&#x27;, &#x27;Sku&#x27;: &#x27;LC0604005-5-S&#x27;, &#x27;SpecId&#x27;: 133615, &#x27;ProductId&#x27;: 35220, &#x27;ColorSku&#x27;: &#x27;LC0604005-5&#x27;, &#x27;OrderApplyItemIds&#x27;: 701062, &#x27;ApplyQty&#x27;: 1, &#x27;ConfirmQty&#x27;: 1, &#x27;AuditQty&#x27;: 1, &#x27;StockByMain&#x27;: 0, &#x27;AvailableReceivingQty&#x27;: 0, &#x27;StockByShare&#x27;: 0, &#x27;UseCompanyStock&#x27;: &#x27;0&#x27;, &#x27;UseShareStock&#x27;: &#x27;0&#x27;, &#x27;ReceivingQty&#x27;: &#x27;0&#x27;, &#x27;PurchaseAddQty&#x27;: &#x27;0&#x27;, &#x27;Department&#x27;: &#x27;SupplyCenter&#x27;, &#x27;DepartmentName&#x27;: &#x27;供应中心&#x27;, &#x27;ReplenishmentQty&#x27;: 0, &#x27;PlanningExpectDeliveryDate&#x27;: &#x27;&#x27;, &#x27;PrepareCycle&#x27;: &#x27;&#x27;, &#x27;PrepareCycleVal&#x27;: 0, &#x27;DefaultImage&#x27;: &#x27;&lt;img src=&quot;/App_Themes/Default/images/nophoto.gif&quot; class=&quot;thumbnail&quot;&gt;&#x27;, &#x27;InOrderQty&#x27;: 1, &#x27;Remark&#x27;: &#x27;&#x27;}], &#x27;action&#x27;: &#x27;AuditApplyByPlan&#x27;}
-请求成功返回参数：{
-  &quot;StatusCode&quot;: 200,
-  &quot;Message&quot;: &quot;null&quot;,
-  &quot;Data&quot;: &quot;null&quot;,
-  &quot;RedirectUrl&quot;: &quot;null&quot;
-}
-接口实际返回值：{&#x27;StatusCode&#x27;: 200}
-期望值:StatusCode=200
-效验通过，期望值：200=实际值:200
-<br/></div></td></tr></tbody></table></body></html>
+                开始执行测试用例：倒入申请单的step1，部门申请
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;倒入申请单&#x27;, &#x27;测试步骤&#x27;: &#x27;step1&#x27;, &#x27;编号&#x27;: 1.0,
+                &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;部门申请&#x27;, &#x27;参数&#x27;: &#x27;applyType=4&#x27;,
+                &#x27;接口名称&#x27;: &#x27;add_apply&#x27;, &#x27;测试对象&#x27;: &#x27;scm&#x27;, &#x27;接口检查&#x27;: &#x27;Status=6&#x27;,
+                &#x27;数据库检查&#x27;: &#x27;SELECT apply_type from nsy_scm.purchase_apply where apply_no =
+                $OrderApplyNo|4,\nselect apply_item_id from nsy_scm.purchase_apply_item where apply_id =
+                $OrderApplyId|$OrderApplyItemIds&#x27;, &#x27;数据输出&#x27;: &#x27;OrderApplyId,OrderApplyNo,applyQty,applyType,businessType,applyName,location,spaceId,spaceName,erpProductId,spu,erpSpecId,skc,skuSize,sku,supplierId&#x27;,
+                &#x27;files&#x27;: &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;headers&#x27;, &#x27;调试&#x27;: &#x27;&#x27;,
+                &#x27;编写人&#x27;: &#x27;&#x27;}
+                请求url：https://test-api-erp-gateway.dearlovertech.com/scm/purchase/erp/apply/add-apply
+                请求头：{&#x27;Content-Type&#x27;: &#x27;application/json&#x27;, &#x27;authorization&#x27;: &#x27;Bearer
+                eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3N0YWdlLXNzby5kZWFybG92ZXJ0ZWNoLmNvbSIsInN1YiI6ImFkbWluIiwiYXVkIjoic2NtLXBsYXRmb3JtLXRlc3QiLCJleHAiOjE2Njc0NjcxMDksIm5iZiI6MTY2NzM4MDcwOSwiaWF0IjoxNjY3MzgwNzA5LCJqdGkiOiI2Y2NlNGNiMC0yOWUyLTRkZWQtYTBkYi0wNGU4N2FmNjRkNjEiLCJyb2xlIjoi6LaF57qn566h55CG5ZGYIiwidXNlck5hbWUiOiJhZG1pbiIsInVzZXJDb2RlIjoiRmFsc2UiLCJjb21wYW55SWQiOiIxIiwiaXNBZG1pbiI6dHJ1ZSwic3RhdHVzIjoxLCJpc1BhcnRuZXIiOjAsInVzZXJJZCI6NjQ1LCJkZXBhcnRtZW50SWQiOjN9.lPjrm1qMe_MsIn3Nf2gu2Vn_berXnFqC_eNSDGxOUIDuykgumQqHNO_4QKA4W5lUd6V7dSc2JI6rWo_7s3a7Q2iBCvciGnqeBrh-A5WG2qtYPTDDm_cXByavmt3MAHVLjdGh8p1WDGyezlbOjvioC8qgwg2JFJOXIPPREZ8sj-khAhqAVVceavDLTeBpjXIwODoKwzMc9gHHGKz_DRAKi3XdEyrEcmwoB_uqsDnKXzM_-1iByThHXqL5hqhHcccFrI1MUPbjGgMzM3cBKFpVOrmmAZGpcTibvIup3OY8Dk8NdRU5ebBsAVZPXzUd2pHkKQkMJWDsMcYAmXBKchWIHQ&#x27;}
+                请求参数：{&#x27;userName&#x27;: &#x27;admin&#x27;, &#x27;orderApply&#x27;: {&#x27;applyType&#x27;: &#x27;4&#x27;,
+                &#x27;status&#x27;: 6, &#x27;businessType&#x27;: &#x27;B2C&#x27;, &#x27;groupId&#x27;: 0, &#x27;groupName&#x27;:
+                &#x27;&#x27;, &#x27;storeId&#x27;: 0, &#x27;storeName&#x27;: &#x27;&#x27;, &#x27;applyName&#x27;: &#x27;b2b&#x27;,
+                &#x27;applierUserCode&#x27;: &#x27;admin&#x27;, &#x27;location&#x27;: &#x27;QUANZHOU&#x27;, &#x27;auditor&#x27;:
+                &#x27;&#x27;, &#x27;auditDate&#x27;: &#x27;&#x27;, &#x27;reviewBy&#x27;: &#x27;&#x27;, &#x27;reviewDate&#x27;:
+                &#x27;&#x27;, &#x27;reviewFailedReason&#x27;: &#x27;&#x27;, &#x27;containCancelSecondDispose&#x27;: 0,
+                &#x27;purchaseRemark&#x27;: &#x27;&#x27;, &#x27;applyNo&#x27;: &#x27;&#x27;}, &#x27;orderApplyItemList&#x27;:
+                [{&#x27;applyId&#x27;: 0, &#x27;spaceId&#x27;: 1, &#x27;spaceName&#x27;: &#x27;新时颖主仓库&#x27;, &#x27;status&#x27;:
+                6, &#x27;supplierId&#x27;: 2, &#x27;erpProductId&#x27;: 35220, &#x27;spu&#x27;: &#x27;LC0604005&#x27;,
+                &#x27;erpSpecId&#x27;: 133615, &#x27;skc&#x27;: &#x27;LC0604005-5&#x27;, &#x27;sku&#x27;: &#x27;LC0604005-5-S&#x27;,
+                &#x27;skuSize&#x27;: &#x27;S&#x27;, &#x27;expectedArrivalDate&#x27;: &#x27;2022-11-07&#x27;, &#x27;applyQty&#x27;:
+                1, &#x27;tid&#x27;: &#x27;&#x27;, &#x27;saleMonth&#x27;: &#x27;&#x27;, &#x27;attributeNames&#x27;:
+                &#x27;&#x27;, &#x27;devLog&#x27;: &#x27;&#x27;, &#x27;remark&#x27;: &#x27;测试-&#x27;, &#x27;location&#x27;:
+                &#x27;QUANZHOU&#x27;, &#x27;newestExpectDeliveryDate&#x27;: &#x27;&#x27;, &#x27;estimatedDeliveryDate&#x27;:
+                &#x27;&#x27;, &#x27;sellerSku&#x27;: &#x27;&#x27;, &#x27;sellerBarCode&#x27;: &#x27;&#x27;, &#x27;handleDepartmentId&#x27;:
+                0, &#x27;fifoQty&#x27;: 0, &#x27;auditorUserCode&#x27;: &#x27;&#x27;, &#x27;auditDate&#x27;: &#x27;&#x27;,
+                &#x27;useBaseSkuStock&#x27;: 0, &#x27;customizedTid&#x27;: &#x27;&#x27;, &#x27;useCompanyStock&#x27;: 0,
+                &#x27;applyReceivedQty&#x27;: 0, &#x27;usePurchaseQty&#x27;: 0}]}
+                请求成功返回参数：{&quot;groupName&quot;:&quot;&quot;,&quot;storeName&quot;:&quot;&quot;,&quot;OrderApplyId&quot;:68605,&quot;OrderApplyNo&quot;:&quot;PR2211021718293668&quot;,&quot;SourceType&quot;:4,&quot;Status&quot;:6,&quot;BusinessType&quot;:&quot;B2C&quot;,&quot;GroupId&quot;:0,&quot;disAInfoID&quot;:0,&quot;ApplyBy&quot;:&quot;b2b&quot;,&quot;DeliveryLocation&quot;:&quot;QUANZHOU&quot;,&quot;CreateDate&quot;:&quot;2022-11-02
+                17:18:29&quot;,&quot;UpdateDate&quot;:&quot;2022-11-02 17:18:29&quot;,&quot;UpdateBy&quot;:&quot;admin&quot;,&quot;CreateBy&quot;:&quot;admin&quot;,&quot;Applier&quot;:&quot;admin&quot;}
+                接口实际返回值：{&#x27;Status&#x27;: 6}
+                期望值:Status=6
+                效验通过，期望值：6=实际值:6
+                全局变量设置完成：{&#x27;client_id&#x27;: &#x27;scm-platform-test&#x27;, &#x27;applyType&#x27;: &#x27;4&#x27;,
+                &#x27;businessType&#x27;: &#x27;B2C&#x27;, &#x27;applyName&#x27;: &#x27;b2b&#x27;, &#x27;location&#x27;:
+                &#x27;QUANZHOU&#x27;, &#x27;spaceId&#x27;: 1, &#x27;spaceName&#x27;: &#x27;新时颖主仓库&#x27;, &#x27;supplierId&#x27;:
+                2, &#x27;erpProductId&#x27;: 35220, &#x27;spu&#x27;: &#x27;LC0604005&#x27;, &#x27;erpSpecId&#x27;:
+                133615, &#x27;skc&#x27;: &#x27;LC0604005-5&#x27;, &#x27;sku&#x27;: &#x27;LC0604005-5-S&#x27;, &#x27;skuSize&#x27;:
+                &#x27;S&#x27;, &#x27;applyQty&#x27;: 1, &#x27;OrderApplyId&#x27;: 68605, &#x27;OrderApplyNo&#x27;:
+                &#x27;PR2211021718293668&#x27;}
+                数据库对象创建成功
+                开始执行sql：SELECT apply_type from nsy_scm.purchase_apply where apply_no = &#x27;PR2211021718293668&#x27;
+                数据库别名已在配置当中，直接返回
+                数据库赋值完成，已经添加：{&#x27;OrderApplyItemIds&#x27;: 701062}到全局变量
+                =================================================================
+                开始执行测试用例：倒入申请单的step2，提交申请单
+                测试步骤信息：{&#x27;用例名称&#x27;: &#x27;倒入申请单&#x27;, &#x27;测试步骤&#x27;: &#x27;step2&#x27;, &#x27;编号&#x27;: &#x27;&#x27;,
+                &#x27;执行方式&#x27;: &#x27;接口&#x27;, &#x27;描述&#x27;: &#x27;提交申请单&#x27;, &#x27;参数&#x27;: &#x27;&#x27;,
+                &#x27;接口名称&#x27;: &#x27;OrderApplyController&#x27;, &#x27;测试对象&#x27;: &#x27;erp&#x27;, &#x27;接口检查&#x27;:
+                &#x27;StatusCode=200&#x27;, &#x27;数据库检查&#x27;: &#x27;&#x27;, &#x27;数据输出&#x27;: &#x27;&#x27;, &#x27;files&#x27;:
+                &#x27;&#x27;, &#x27;请求头&#x27;: &#x27;erpHeader&#x27;, &#x27;调试&#x27;: &#x27;&#x27;, &#x27;编写人&#x27;:
+                &#x27;&#x27;}
+                请求url：http://test-xsy.dearlovertech.com/Mvc/Controller/PurchaseManage/OrderApplyController.aspx
+                请求头：{&#x27;Content-Type&#x27;: &#x27;application/x-www-form-urlencoded&#x27;}
+                请求参数：{&#x27;itemList&#x27;: [{&#x27;Key&#x27;: &#x27;LC0604005-5&#x27;, &#x27;Sku&#x27;: &#x27;LC0604005-5-S&#x27;,
+                &#x27;SpecId&#x27;: 133615, &#x27;ProductId&#x27;: 35220, &#x27;ColorSku&#x27;: &#x27;LC0604005-5&#x27;,
+                &#x27;OrderApplyItemIds&#x27;: 701062, &#x27;ApplyQty&#x27;: 1, &#x27;ConfirmQty&#x27;: 1, &#x27;AuditQty&#x27;:
+                1, &#x27;StockByMain&#x27;: 0, &#x27;AvailableReceivingQty&#x27;: 0, &#x27;StockByShare&#x27;: 0, &#x27;UseCompanyStock&#x27;:
+                &#x27;0&#x27;, &#x27;UseShareStock&#x27;: &#x27;0&#x27;, &#x27;ReceivingQty&#x27;: &#x27;0&#x27;, &#x27;PurchaseAddQty&#x27;:
+                &#x27;0&#x27;, &#x27;Department&#x27;: &#x27;SupplyCenter&#x27;, &#x27;DepartmentName&#x27;: &#x27;供应中心&#x27;,
+                &#x27;ReplenishmentQty&#x27;: 0, &#x27;PlanningExpectDeliveryDate&#x27;: &#x27;&#x27;, &#x27;PrepareCycle&#x27;:
+                &#x27;&#x27;, &#x27;PrepareCycleVal&#x27;: 0, &#x27;DefaultImage&#x27;: &#x27;&lt;img src=&quot;/App_Themes/Default/images/nophoto.gif&quot;
+                class=&quot;thumbnail&quot;&gt;&#x27;, &#x27;InOrderQty&#x27;: 1, &#x27;Remark&#x27;: &#x27;&#x27;}],
+                &#x27;action&#x27;: &#x27;AuditApplyByPlan&#x27;}
+                请求成功返回参数：{
+                &quot;StatusCode&quot;: 200,
+                &quot;Message&quot;: &quot;null&quot;,
+                &quot;Data&quot;: &quot;null&quot;,
+                &quot;RedirectUrl&quot;: &quot;null&quot;
+                }
+                接口实际返回值：{&#x27;StatusCode&#x27;: 200}
+                期望值:StatusCode=200
+                效验通过，期望值：200=实际值:200
+                <br/></div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

@@ -449,3 +449,29 @@ class LogStreamView(View):
     def _format_sse_event(self, event_type, data):
         """格式化SSE事件"""
         return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+#分页实例
+# def mobile_list(request):
+#     # for i in range(100):
+#     #     models.PrettyNum.objects.create(mobile='13859195723', price=33, level=3, status=1)
+#
+#     data_dic = {}
+#     search_data = request.GET.get('q', '')
+#     if search_data:
+#         data_dic["mobile__contains"] = search_data
+#
+#     querylist = models.PrettyNum.objects.filter(**data_dic).order_by('id')
+#
+#     page_object = pagenation.Pagination(request, querylist, review_page=4,page_size=8)
+#
+#     contn = {
+#         "querylist":page_object.page_queryset,
+#         "search_data": search_data,
+#         "page_string": page_object.html()
+#     }
+#
+#     return render(request, 'mobile/mobile_list.html', contn)
+#            <ul class="pagination">
+#                 {{ page_string }}
+#             </ul>

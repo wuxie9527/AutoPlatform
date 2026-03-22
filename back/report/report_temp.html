@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接口自动化测试报告</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        . {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card.passed {
+            border-top: 4px solid #4CAF50;
+        }
+
+        .card.failed {
+            border-top: 4px solid #F44336;
+        }
+
+        .card.skipped {
+            border-top: 4px solid #FFC107;
+        }
+
+        .card.total {
+            border-top: 4px solid #2196F3;
+        }
+
+        .card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .card .label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .charts-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #444;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            height: 400px;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        .test-details {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .details-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .details-header h3 {
+            color: #444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status.passed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.skipped {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .time {
+            font-family: 'Courier New', monospace;
+            color: #666;
+        }
+
+        .execution-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-item .label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .info-item .value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            background: #e9ecef;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: #dee2e6;
+        }
+
+        .method-get, .method-post, .method-put, .method-delete {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .method-get {
+            background: #61affe;
+            color: white;
+        }
+
+        .method-post {
+            background: #49cc90;
+            color: white;
+        }
+
+        .method-put {
+            background: #fca130;
+            color: white;
+        }
+
+        .method-delete {
+            background: #f93e3e;
+            color: white;
+        }
+
+        .response-time {
+            font-weight: 600;
+        }
+
+        .response-time.fast {
+            color: #4CAF50;
+        }
+
+        .response-time.medium {
+            color: #FF9800;
+        }
+
+        .response-time.slow {
+            color: #F44336;
+        }
+
+        @media (max-width: 768px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 350px;
+                position: relative;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .execution-info {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        🔍 接口自动化测试报告
+        测试执行时间: 2026-03-10 14:30:00
+    </header>
+    <!-- 摘要统计卡片 -->
+    <section class="summary-cards">
+        <div class="card total">
+            <div class="label">总用例数</div>
+            <div class="value" id="totalTests">0</div>
+        </div>
+        <div class="card passed">
+            <div class="label">通过</div>
+            <div class="value" id="passedTests">0</div>
+        </div>
+        <div class="card failed">
+            <div class="label">失败</div>
+            <div class="value" id="failedTests">0</div>
+        </div>
+        <div class="card skipped">
+            <div class="label">跳过</div>
+            <div class="value" id="skippedTests">0</div>
+        </div>
+    </section>
+
+    <!-- 图表区域 -->
+    <section class="charts-section">
+        <h2 class="section-title">测试结果分析</h2>
+        <div class="charts">
+            <div class="chart-container">
+                <h3>📊 测试结果分布</h3>
+                <canvas id="resultChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>⏱️ 接口响应时间统计</h3>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- 测试详情 -->
+    <section class="test-details">
+        <div class="details-header">
+            <h3>📋 测试用例详情</h3>
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索用例名称、接口路径或状态...">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全部用例</button>
+                <button class="filter-btn" data-filter="passed">通过用例</button>
+                <button class="filter-btn" data-filter="failed">失败用例</button>
+                <button class="filter-btn" data-filter="skipped">跳过用例</button>
+            </div>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>用例ID</th>
+                <th>用例名称</th>
+                <th>接口路径</th>
+                <th>请求方法</th>
+                <th>状态</th>
+                <th>响应时间</th>
+                <th>执行时间</th>
+            </tr>
+            </thead>
+            <tbody id="testTableBody">
+            <!-- 测试数据将通过JavaScript动态生成 -->
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 执行信息 -->
+    <section class="execution-info">
+        <div class="info-item">
+            <div class="label">📅 测试开始时间</div>
+            <div class="value" id="startTime">14:30:00</div>
+        </div>
+        <div class="info-item">
+            <div class="label">⏰ 测试结束时间</div>
+            <div class="value" id="endTime">14:45:30</div>
+        </div>
+        <div class="info-item">
+            <div class="label">⏱️ 总执行时长</div>
+            <div class="value" id="totalDuration">15分30秒</div>
+        </div>
+        <div class="info-item">
+            <div class="label">📈 通过率</div>
+            <div class="value" id="passRate">0%</div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // 测试数据
+    const testData = {
+        summary: {
+            total: 25,
+            passed: 20,
+            failed: 3,
+            skipped: 2,
+            startTime: '2026-03-10 14:30:00',
+            endTime: '2026-03-10 14:45:30',
+            totalDuration: '15分30秒',
+            passRate: '80.0%'
+        },
+        testCases: [
+            {
+                id: 'TC001',
+                name: '用户登录接口测试',
+                path: '/api/login',
+                method: 'POST',
+                status: 'passed',
+                responseTime: 120,
+                timestamp: '14:30:15'
+            },
+            {
+                id: 'TC002',
+                name: '获取用户信息',
+                path: '/api/user/info',
+                method: 'GET',
+                status: 'passed',
+                responseTime: 85,
+                timestamp: '14:31:20'
+            },
+            {
+                id: 'TC003',
+                name: '创建新订单',
+                path: '/api/order/create',
+                method: 'POST',
+                status: 'passed',
+                responseTime: 210,
+                timestamp: '14:32:45'
+            },
+            {
+                id: 'TC004',
+                name: '更新用户资料',
+                path: '/api/user/update',
+                method: 'PUT',
+                status: 'passed',
+                responseTime: 150,
+                timestamp: '14:33:30'
+            },
+            {
+                id: 'TC005',
+                name: '删除订单记录',
+                path: '/api/order/delete',
+                method: 'DELETE',
+                status: 'passed',
+                responseTime: 95,
+                timestamp: '14:34:10'
+            },
+            {
+                id: 'TC006',
+                name: '商品列表查询',
+                path: '/api/products',
+                method: 'GET',
+                status: 'passed',
+                responseTime: 110,
+                timestamp: '14:35:20'
+            },
+            {
+                id: 'TC007',
+                name: '购物车添加商品',
+                path: '/api/cart/add',
+                method: 'POST',
+                status: 'passed',
+                responseTime: 180,
+                timestamp: '14:36:15'
+            },
+            {
+                id: 'TC008',
+                name: '支付接口测试',
+                path: '/api/payment/process',
+                method: 'POST',
+                status: 'failed',
+                responseTime: 300,
+                timestamp: '14:37:40'
+            },
+            {
+                id: 'TC009',
+                name: '物流信息查询',
+                path: '/api/logistics/track',
+                method: 'GET',
+                status: 'passed',
+                responseTime: 140,
+                timestamp: '14:38:25'
+            },
+            {
+                id: 'TC010',
+                name: '评价提交测试',
+                path: '/api/review/submit',
+                method: 'POST',
+                status: 'passed',
+                responseTime: 160,
+                timestamp: '14:39:10'
+            },
+            {
+                id: 'TC011',
+                name: '优惠券验证',
+                path: '/api/coupon/validate',
+                method: 'GET',
+                status: 'skipped',
+                responseTime: 0,
+                timestamp: '14:40:00'
+            },
+            {
+                id: 'TC012',
+                name: '库存查询接口',
+                path: '/api/inventory/check',
+                method: 'GET',
+                status: 'passed',
+                responseTime: 75,
+                timestamp: '14:40:45'
+            },
+            {
+                id: 'TC013',
+                name: '批量用户导入',
+                path: '/api/users/import',
+                method: 'POST',
+                status: 'failed',
+                responseTime: 450,
+                timestamp: '14:42:20'
+            },
+            {
+                id: 'TC014',
+                name: '数据统计接口',
+                path: '/api/statistics/daily',
+                method: 'GET',
+                status: 'passed',
+                responseTime: 220,
+                timestamp: '14:43:15'
+            },
+            {
+                id: 'TC015',
+                name: '系统配置获取',
+                path: '/api/config',
+                method: 'GET',
+                status: 'passed',
+                responseTime: 65,
+                timestamp: '14:44:00'
+            },
+            {
+                id: 'TC016',
+                name: '消息推送测试',
+                path: '/api/notify/push',
+                method: 'POST',
+                status: 'passed',
+                responseTime: 190,
+                timestamp: '14:44:30'
+            },
+            {
+                id: 'TC017',
+                name: '文件上传接口',
+                path: '/api/upload',
+                method: 'POST',
+                status: 'passed',
+                responseTime: 280,
+                timestamp: '14:45:00'
+            },
+            {
+                id: 'TC018',
+                name: '数据导出接口',
+                path: '/api/export',
+                method: 'GET',
+                status: 'failed',
+                responseTime: 320,
+                timestamp: '14:45:10'
+            },
+            {
+                id: 'TC019',
+                name: '缓存清理测试',
+                path: '/api/cache/clear',
+                method: 'DELETE',
+                status: 'passed',
+                responseTime: 90,
+                timestamp: '14:45:15'
+            },
+            {
+                id: 'TC020',
+                name: '性能监控接口',
+                path: '/api/monitor',
+                method: 'GET',
+                status: 'skipped',
+                responseTime: 0,
+                timestamp: '14:45:20'
+            }
+        ]
+    };
+
+    // 初始化页面数据
+    function initializePage() {
+        // 更新统计卡片
+        document.getElementById('totalTests').textContent = testData.summary.total;
+        document.getElementById('passedTests').textContent = testData.summary.passed;
+        document.getElementById('failedTests').textContent = testData.summary.failed;
+        document.getElementById('skippedTests').textContent = testData.summary.skipped;
+
+        // 更新测试时间
+        document.getElementById('testTime').textContent = testData.summary.startTime;
+
+        // 更新执行信息
+        document.getElementById('startTime').textContent = testData.summary.startTime.split(' ')[1];
+        document.getElementById('endTime').textContent = testData.summary.endTime.split(' ')[1];
+        document.getElementById('totalDuration').textContent = testData.summary.totalDuration;
+        document.getElementById('passRate').textContent = testData.summary.passRate;
+
+        // 渲染测试表格
+        renderTestTable(testData.testCases);
+
+        // 初始化图表
+        initializeCharts();
+    }
+
+    // 渲染测试表格
+    function renderTestTable(testCases, filter = 'all') {
+        const tableBody = document.getElementById('testTableBody');
+        tableBody.innerHTML = '';
+
+        const filteredCases = testCases.filter(testCase => {
+            if (filter === 'all') return true;
+            return testCase.status === filter;
+        });
+
+        filteredCases.forEach(testCase => {
+            const row = document.createElement('tr');
+
+            // 根据响应时间设置CSS类
+            let timeClass = '';
+            if (testCase.responseTime > 0) {
+                if (testCase.responseTime < 100) {
+                    timeClass = 'fast';
+                } else if (testCase.responseTime < 300) {
+                    timeClass = 'medium';
+                } else {
+                    timeClass = 'slow';
+                }
+            }
+
+            row.innerHTML = `
+            <td>${testCase.id}</td>
+            <td>${testCase.name}</td>
+            <td>${testCase.path}</td>
+            <td>
+                <span class="method-${testCase.method.toLowerCase()}">
+                    ${testCase.method}
+                </span>
+            </td>
+            <td><span class="status ${testCase.status}">${getStatusText(testCase.status)}</span></td>
+            <td>
+                <span class="response-time ${timeClass}">
+                    ${testCase.responseTime > 0 ? testCase.responseTime + 'ms' : 'N/A'}
+                </span>
+            </td>
+            <td class="time">${testCase.timestamp}</td>
+        `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    // 获取状态文本
+    function getStatusText(status) {
+        const statusMap = {
+            'passed': '通过',
+            'failed': '失败',
+            'skipped': '跳过'
+        };
+        return statusMap[status] || status;
+    }
+
+    // 初始化图表
+    function initializeCharts() {
+        // 测试结果分布图
+        const resultCtx = document.getElementById('resultChart').getContext('2d');
+        const resultChart = new Chart(resultCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['通过', '失败', '跳过'],
+                datasets: [{
+                    data: [testData.summary.passed, testData.summary.failed, testData.summary.skipped],
+                    backgroundColor: [
+                        '#4CAF50',
+                        '#F44336',
+                        '#FFC107'
+                    ],
+                    borderColor: [
+                        '#388E3C',
+                        '#D32F2F',
+                        '#FFA000'
+                    ],
+                    borderWidth: 1,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 响应时间统计图
+        const timeCtx = document.getElementById('timeChart').getContext('2d');
+        const responseTimes = testData.testCases
+            .filter(tc => tc.responseTime > 0)
+            .map(tc => tc.responseTime);
+
+        const timeLabels = testData.testCases
+            .filter(tc => tc.responseTime > 0)
+            .map(tc => tc.id);
+
+        const backgroundColors = responseTimes.map(time => {
+            if (time < 100) return '#4CAF50';
+            if (time < 300) return '#FF9800';
+            return '#F44336';
+        });
+
+        const timeChart = new Chart(timeCtx, {
+            type: 'bar',
+            data: {
+                labels: timeLabels,
+                datasets: [{
+                    label: '响应时间(ms)',
+                    data: responseTimes,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors.map(color => color.replace('0.8', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '响应时间(ms)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '测试用例ID',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const time = context.parsed.y;
+                                let performance = '';
+                                if (time < 100) performance = ' (优秀)';
+                                else if (time < 300) performance = ' (良好)';
+                                else performance = ' (需优化)';
+                                return `响应时间: ${time}ms${performance}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 搜索功能
+    document.getElementById('searchInput').addEventListener('input', function (e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = testData.testCases.filter(testCase =>
+            testCase.name.toLowerCase().includes(searchTerm) ||
+            testCase.path.toLowerCase().includes(searchTerm) ||
+            testCase.id.toLowerCase().includes(searchTerm) ||
+            testCase.status.toLowerCase().includes(searchTerm) ||
+            testCase.method.toLowerCase().includes(searchTerm)
+        );
+        renderTestTable(filtered, getActiveFilter());
+    });
+
+    // 过滤器功能
+    let activeFilter = 'all';
+
+    function getActiveFilter() {
+        return activeFilter;
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            // 移除其他按钮的active类
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            // 为当前按钮添加active类
+            this.classList.add('active');
+            // 获取过滤器类型
+            activeFilter = this.getAttribute('data-filter');
+            // 重新渲染表格
+            renderTestTable(testData.testCases, activeFilter);
+        });
+    });
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initializePage);
+    document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();  // 确保图表在DOM完全加载后初始化
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>

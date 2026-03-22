@@ -6,20 +6,21 @@
     <title>接口测试平台 - 用例管理</title>
 
     <!-- Bootstrap 3 CSS -->
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="/static/css/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/static/css/base.css">
-
-    {% block css %}{% endblock %}
-
+    <link rel="stylesheet" href="/static/css/base1.css">
+    <link rel="stylesheet" href="/static/css/ai_chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css">
+        {% block css %}{% endblock %}
 </head>
+
 <body>
     <!-- 左侧导航栏 -->
     <nav class="sidebar">
         <div class="logo">
             <i class="fa fa-bug"></i>
-            <span>接口测试平台</span>
+            <span>时代骐骥</span>
         </div>
 
         <ul class="nav nav-pills nav-stacked">
@@ -44,13 +45,13 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#">
+                            <a href="/front/interface/list/">
                                 <i class="fa fa-plug"></i>
                                 <span>接口管理</span>
                             </a>
                         </li>
                         <li class="active">
-                            <a href="#">
+                            <a href="/front/case/list/">
                                 <i class="fa fa-list-alt"></i>
                                 <span>用例管理</span>
                             </a>
@@ -59,13 +60,13 @@
                 </div>
             </li>
             <li>
-                <a href="#">
+                <a href="/front/evn/list/">
                     <i class="fa fa-server"></i>
                     <span>环境管理</span>
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="/front/variable/list/">
                     <i class="fa fa-globe"></i>
                     <span>全局变量</span>
                 </a>
@@ -77,16 +78,17 @@
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="/front/project/list/">
                     <i class="fa fa-folder"></i>
                     <span>项目管理</span>
                 </a>
             </li>
             <li>
-                <a href="#system" data-toggle="collapse" class="collapsed"> <i class="fa fa-cogs"></i>
-                    <span>系统设置</span> <i class="icon-submenu lnr lnr-chevron-left"></i>
+                <a href="#system" data-toggle="collapse" class="collapse-toggle"><i class="fa fa-plug"></i>
+                    <span>系统设置</span> 
+                     <i class="icon-submenu lnr lnr-chevron-left"></i>
                 </a>
-                <div id="system" class="collapse ">
+                <div id="system" class="collapse in">
                     <ul class="nav">
                         <li><a href="/base/sign/" class="">签名方式</a></li>
                     </ul>
@@ -95,28 +97,54 @@
         </ul>
     </nav>
 
-    <!-- 固定顶部栏 -->
-        <div class="header">
-        <h1 class="page-title">用例管理</h1>
+    <!-- 顶部信息栏 -->
+    <div class="header">
+        <h1 class="page-title">首页</h1>
         <div class="user-info">
             <div class="user-avatar">AD</div>
             <span>管理员</span>
         </div>
-
+    </div>
 
     <!-- 主内容区域 -->
     <div class="main-content">
-                {% block body %}
-                {% endblock %}
-        </div>
+        {% block body %}
+        {% endblock %}
+    </div>
 
 
     <!-- jQuery 和 Bootstrap JS -->
     <script src="/static/js/jquery/jquery.min.js"></script>
     <script src="/static/js/bootstrap.js"></script>
-    <script src="/static/js/base.js"></script>
-
+    <script src="/static/js/base1.js"></script>
+    <script src="/static/js/ai_chat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
 {% block javascript %} {% endblock %}
+
+    <!-- AI 聊天悬浮窗 -->
+    <div id="ai-chat-widget">
+        <!-- 悬浮按钮 -->
+        <button id="ai-chat-toggle" class="ai-chat-btn" title="AI 助手">
+            <i class="fa fa-comments"></i>
+        </button>
+        
+        <!-- 聊天面板 -->
+        <div id="ai-chat-panel" class="ai-chat-panel hidden">
+            <div class="chat-header">
+                <span>🤖 卡卡罗特 AI 助手</span>
+                <button id="ai-chat-close">×</button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- 消息会动态添加到这里 -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="问点什么..." autocomplete="off">
+                <button id="chat-send">
+                    <i class="fa fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

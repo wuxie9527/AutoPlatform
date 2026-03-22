@@ -88,3 +88,43 @@ def pytest_addoption(parser):
 def get_cmdopts(request):
     if request.config.getoption("--eve"):
         return request.config.getoption("--eve")
+
+
+#修改成功用例详情不显示日志
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """只对失败用例捕获日志"""
+    outcome = yield
+    report = outcome.get_result()
+
+    # 只在测试失败时才捕获日志
+    if report.when == "call" and report.failed:
+        # 捕获日志
+        caplog = item.funcargs.get("caplog", None)
+        if caplog:
+            # 获取日志记录
+            logs = []
+            for record in caplog.records:
+                logs.append({
+                    'level': record.levelname,
+                    'message': record.getMessage(),
+                    'time': record.created
+                })
+
+            # 将日志添加到报告中
+            if logs:
+                report.sections.append(("日志", format_logs(logs)))
+
+    elif report.when == "call" and report.passed:
+        # 成功用例清除日志
+        if "caplog" in item.funcargs:
+            caplog = item.funcargs["caplog"]
+            caplog.clear()  # 清除成功用例的日志
+
+
+def format_logs(logs):
+    """格式化日志输出"""
+    formatted = []
+    for log in logs:
+        formatted.append(f"{log['level']} - {log['message']}")
+    return "\n".join(formatted)
